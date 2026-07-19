@@ -47,11 +47,12 @@ jobs:
           REPO_ID="R_kgDOQwINlA"          # BaryoDev/.github
           CAT_ID="DIC_kwDOQwINlM4C0ZbS"    # Announcements
 
-          # Idempotency: skip if a discussion with this exact title already exists.
+          # Idempotency: skip if a discussion with this exact title already exists. We list the
+          # repo's recent discussions rather than the global search API, which a fine-grained token
+          # scoped only to Discussions can't access.
           TITLES=$(gh api graphql \
-            -f query='query($q:String!){search(type:DISCUSSION,query:$q,first:25){nodes{... on Discussion{title}}}}' \
-            -f q="repo:BaryoDev/.github in:title \"$TITLE\"" \
-            --jq '.data.search.nodes[].title' || true)
+            -f query='query{repository(owner:"BaryoDev",name:".github"){discussions(first:100, orderBy:{field:CREATED_AT, direction:DESC}){nodes{title}}}}' \
+            --jq '.data.repository.discussions.nodes[].title' || true)
           if printf '%s\n' "$TITLES" | grep -Fxq "$TITLE"; then
             echo "Already announced: $TITLE"
             exit 0
