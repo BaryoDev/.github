@@ -1,0 +1,70 @@
+name: Announce release
+
+# Reusable across every BaryoDev repo: posts a release to the org's Announcements discussions.
+# Call it from a repo's publish workflow (see this repo's README for the snippet). Idempotent —
+# a release with the same title is announced only once.
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: 'Human name of the thing shipped, e.g. "@baryodev/pwa-kit" or "barako-cms (docker)".'
+        required: true
+        type: string
+      version:
+        description: 'Version or tag, e.g. "v0.3.0" (a leading v is trimmed).'
+        required: true
+        type: string
+      notes:
+        description: "Release notes (markdown). Falls back to a one-liner."
+        required: false
+        type: string
+        default: ""
+      install:
+        description: "Optional install/pull command shown in a code block."
+        required: false
+        type: string
+        default: ""
+    secrets:
+      ANNOUNCE_TOKEN:
+        description: "PAT with Discussions read/write on BaryoDev/.github."
+        required: true
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to org announcements
+        env:
+          GH_TOKEN: ${{ secrets.ANNOUNCE_TOKEN }}
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          NOTES: ${{ inputs.notes }}
+          INSTALL: ${{ inputs.install }}
+        run: |
+          set -euo pipefail
+          VER="${VERSION#v}"
+          TITLE="$PACKAGE v$VER"
+          REPO_ID="R_kgDOQwINlA"          # BaryoDev/.github
+          CAT_ID="DIC_kwDOQwINlM4C0ZbS"    # Announcements
+
+          # Idempotency: skip if a discussion with this exact title already exists.
+          TITLES=$(gh api graphql \
+            -f query='query($q:String!){search(type:DISCUSSION,query:$q,first:25){nodes{... on Discussion{title}}}}' \
+            -f q="repo:BaryoDev/.github in:title \"$TITLE\"" \
+            --jq '.data.search.nodes[].title' || true)
+          if printf '%s\n' "$TITLES" | grep -Fxq "$TITLE"; then
+            echo "Already announced: $TITLE"
+            exit 0
+          fi
+
+          BODY="${NOTES:-Released $PACKAGE v$VER.}"
+          if [ -n "${INSTALL}" ]; then
+            BODY="$BODY"$'\n\n**Install**\n```\n'"$INSTALL"$'\n```'
+          fi
+          BODY="$BODY"$'\n\n_Posted automatically on publish._'
+
+          URL=$(gh api graphql \
+            -f query='mutation($r:ID!,$c:ID!,$t:String!,$b:String!){createDiscussion(input:{repositoryId:$r,categoryId:$c,title:$t,body:$b}){discussion{url}}}' \
+            -f r="$REPO_ID" -f c="$CAT_ID" -f t="$TITLE" -f b="$BODY" \
+            --jq '.data.createDiscussion.discussion.url')
+          echo "Announced: $URL"
