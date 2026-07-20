@@ -34,6 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post to org announcements
+        # Best-effort: announcing is a courtesy, never a release gate. If the discussion post fails
+        # (permissions, API hiccup), log it and pass so the caller's publish stays green.
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.ANNOUNCE_TOKEN }}
           PACKAGE: ${{ inputs.package }}
