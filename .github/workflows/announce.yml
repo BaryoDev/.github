@@ -28,6 +28,9 @@ on:
       ANNOUNCE_TOKEN:
         description: "PAT with Discussions read/write on BaryoDev/.github."
         required: true
+      DISCORD_WEBHOOK:
+        description: "Discord channel webhook URL. Optional — when set, the release is also posted to Discord."
+        required: false
 
 jobs:
   announce:
@@ -72,3 +75,42 @@ jobs:
             -f r="$REPO_ID" -f c="$CAT_ID" -f t="$TITLE" -f b="$BODY" \
             --jq '.data.createDiscussion.discussion.url')
           echo "Announced: $URL"
+
+      - name: Post to Discord
+        # Best-effort like the discussion post above — a Discord hiccup never gates a release. Skips
+        # silently when no webhook secret is configured, so repos that don't want Discord are unaffected.
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          NOTES: ${{ inputs.notes }}
+          INSTALL: ${{ inputs.install }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "No DISCORD_WEBHOOK configured; skipping Discord announcement."
+            exit 0
+          fi
+
+          VER="${VERSION#v}"
+          DESC="${NOTES:-Released $PACKAGE v$VER.}"
+          # Discord embed descriptions cap at 4096 characters; leave room for the install block.
+          DESC="${DESC:0:3600}"
+          if [ -n "${INSTALL}" ]; then
+            DESC="$DESC"$'\n\n**Install**\n```\n'"$INSTALL"$'\n```'
+          fi
+
+          # Build the JSON with jq so notes containing quotes/newlines/backticks are encoded safely.
+          # Colour 35514 = #008cba (Barako blue). content pings the channel; embed carries the detail.
+          PAYLOAD=$(jq -n \
+            --arg t "$PACKAGE v$VER" \
+            --arg d "$DESC" \
+            '{content: ("**" + $t + "** released"),
+              embeds: [{title: $t, description: $d, color: 35514}]}')
+
+          # Discord returns 204 on success. Fail soft (continue-on-error covers a hard failure too).
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK")
+          echo "Discord responded $code"
+          [ "$code" = "204" ] || echo "Non-204 from Discord (non-fatal)."
