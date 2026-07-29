@@ -14,7 +14,7 @@ design → build → test → ship → operate
 
 | Project | What it is |
 | --- | --- |
-| [BarakoCMS](https://github.com/BaryoDev/barakoCMS) | Event-sourced headless CMS built on .NET. [Full docs](https://baryo.dev/barako-cms/) |
+| [BarakoCMS](https://github.com/BaryoDev/barakoCMS) | Event-sourced, AI-native headless CMS on .NET — opt-in modules, multi-tenant, semantic search. [Full docs](https://baryo.dev/barako-cms/) |
 | [Verdict](https://github.com/BaryoDev/Verdict) | Rules engine with a zero-allocation core and opt-in enterprise packages |
 | [Carom](https://github.com/BaryoDev/Carom) | Zero-dependency resilience library that enforces best practices by default |
 | [Mapsicle](https://github.com/BaryoDev/Mapsicle) | High-performance, modular object mapping for .NET |
@@ -24,6 +24,9 @@ design → build → test → ship → operate
 
 Everything is published where you'd expect it: GitHub, [NuGet](https://baryo.dev/nuget),
 [npm](https://baryo.dev/packages), and [Docker Hub](https://baryo.dev/docker).
+
+[baryo.dev](https://baryo.dev) itself runs on BarakoCMS — the site, its docs, and its blog are all
+content types served through the CMS, with search and "related" links powered by the AI module.
 
 ## More
 
