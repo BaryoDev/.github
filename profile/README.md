@@ -14,7 +14,7 @@ design → build → test → ship → operate
 
 | Project | What it is |
 | --- | --- |
-| [BarakoCMS](https://github.com/BaryoDev/barakoCMS) | Event-sourced, AI-native headless CMS on .NET — opt-in modules, multi-tenant, semantic search. [Full docs](https://baryo.dev/barako-cms/) |
+| [BarakoCMS](https://github.com/BaryoDev/barakoCMS) | Event-sourced, AI-native headless CMS on .NET — opt-in modules, multi-tenant, semantic search. [Full docs](https://baryo.dev/docs/) |
 | [Verdict](https://github.com/BaryoDev/Verdict) | Rules engine with a zero-allocation core and opt-in enterprise packages |
 | [Carom](https://github.com/BaryoDev/Carom) | Zero-dependency resilience library that enforces best practices by default |
 | [Mapsicle](https://github.com/BaryoDev/Mapsicle) | High-performance, modular object mapping for .NET |
