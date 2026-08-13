@@ -1,0 +1,51 @@
+name: Bug report
+description: Something behaves differently from what the docs or the types promise.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reproduction is worth more than a description. A failing test or a small program
+        that shows the problem is usually enough to get this fixed quickly.
+
+  - type: input
+    id: package
+    attributes:
+      label: Which package, and which version
+      placeholder: "dopaminejs 2.2.0, or Verdict.Extensions 2.7.0"
+    validations:
+      required: true
+
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and version
+      description: .NET version, Node version, browser, whichever applies.
+      placeholder: "net8.0 / Node 22 / Chrome 130"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A failing test or the smallest program that shows it. Code, not prose.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: context
+    attributes:
+      label: Anything that applies
+      options:
+        - label: It fails silently rather than throwing
+        - label: Only happens under concurrency
+        - label: Only happens in a trimmed, AOT, or bundled build
+        - label: Worked in an earlier version

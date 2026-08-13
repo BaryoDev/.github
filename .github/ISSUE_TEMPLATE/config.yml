@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question about using one of these libraries
+    url: https://github.com/orgs/BaryoDev/discussions
+    about: Usage questions are better as a discussion than an issue.
+  - name: Security vulnerability
+    url: https://github.com/BaryoDev/.github/blob/main/SECURITY.md
+    about: Do not open a public issue. Report it privately.

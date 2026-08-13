@@ -1,0 +1,37 @@
+name: Feature request
+description: Something this project should be able to do and cannot.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Most of these projects have one constraint that decides design questions: zero
+        dependencies, zero allocation on a hot path, a bundle-size budget. Worth checking the
+        README for it before writing this up, since it usually decides whether something
+        belongs in the core or in a separate package.
+
+  - type: input
+    id: package
+    attributes:
+      label: Which package
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and where does the library get in the way?
+    validations:
+      required: true
+
+  - type: textarea
+    id: shape
+    attributes:
+      label: What the API might look like
+      description: A sketch is fine. It does not have to be right.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you are doing instead today
