@@ -6,6 +6,27 @@ This is the default guide for every BaryoDev project. Some repositories have the
 Contributions are welcome, including small ones. Fixing a typo in a doc comment is a real
 contribution and does not need a discussion first.
 
+## These projects are unfunded, and there is no paid work here
+
+Worth saying plainly, because the question comes up and I would rather answer it once than
+leave anyone waiting.
+
+Everything under this organisation is unpaid and voluntary, mine included. I build these
+because I enjoy building them, not as a business, so there is no budget to pay contributors
+from and offers to implement an issue for a fee will be declined. That is not a comment on
+anyone who asks, it is just the situation, and I would rather you knew before spending time
+on a proposal.
+
+If you want to work on something here, take an issue and open a pull request. That is the
+whole process and it is open to anyone.
+
+One related note, since detailed issues invite this. Many issues here carry a full diagnosis:
+the file, the line, the mechanism and often the suggested fix. That is deliberate, so a
+stranger can start without asking permission. It also means a comment restating the issue back
+does not tell me anything I can act on. The comments worth writing are the ones that add
+something: what the issue got wrong, what it missed, or a question about the part that is not
+specified. Those get answered quickly.
+
 ## Before you start
 
 **For a bug, open an issue with a reproduction.** A failing test, a small program, or the
