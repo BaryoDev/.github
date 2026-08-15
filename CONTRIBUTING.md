@@ -22,7 +22,9 @@ find that out early than after you have written the code.
 2. Make one change per pull request. A fix and a refactor in the same diff are hard to review
    and harder to revert
 3. Add a test that fails without your change. If you cannot write one, say so in the
-   description and explain why
+   description and explain why. [TESTING.md](TESTING.md) is the worked version of this
+   rule: real before and after examples from these repositories, the mutations that tell
+   them apart, and the cases where "I could not write one" is the right answer
 4. Run the full test suite locally before pushing
 5. Update `CHANGELOG.md` if the repository has one
 
