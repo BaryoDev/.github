@@ -27,6 +27,9 @@ on any other repository in this organisation, is treated as spam and **the accou
 blocked**. It is the volume that makes it spam, not the question. One person asking one time
 gets a friendly no.
 
+If you have signed the CLA, you have already agreed to this in writing. Section 5 says you
+provide contributions voluntarily and waive any right to payment, royalties or compensation.
+
 Worth being direct about why, since it is not obvious. Issues here are written with the file,
 the line, the mechanism and usually the fix already in them, so that a stranger can start
 without asking permission. A comment that restates that analysis back and attaches a price has
