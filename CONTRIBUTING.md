@@ -20,12 +20,33 @@ on a proposal.
 If you want to work on something here, take an issue and open a pull request. That is the
 whole process and it is open to anyone.
 
+Asking once is fine and nobody minds. Repeatedly offering paid work across multiple issues
+after being told no is treated as spam, and those accounts get blocked. That has nothing to
+do with the first question and everything to do with the tenth.
+
 One related note, since detailed issues invite this. Many issues here carry a full diagnosis:
 the file, the line, the mechanism and often the suggested fix. That is deliberate, so a
 stranger can start without asking permission. It also means a comment restating the issue back
 does not tell me anything I can act on. The comments worth writing are the ones that add
 something: what the issue got wrong, what it missed, or a question about the part that is not
 specified. Those get answered quickly.
+
+## Signing the CLA
+
+Most of these repositories run a contributor licence agreement check. It confirms the work is
+yours to give under the repository's licence, and it does not transfer ownership of anything.
+
+You do not need to do it in advance. Open your pull request as normal, a bot comments with a
+link, you sign in with GitHub and click once. It is a one time thing across all of these
+repositories, so signing for one covers you everywhere.
+
+The pull request is not blocked while you wait, only the merge is, so nothing is lost by
+signing after you push.
+
+One thing that catches people out: the check matches on the **commit author email**. If your
+commits are authored with an address that is not attached to your GitHub account, the check
+stays red even after you have signed. If that happens, say so on the pull request and it will
+get sorted out.
 
 ## Before you start
 
