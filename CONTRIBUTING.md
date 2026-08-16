@@ -20,9 +20,18 @@ on a proposal.
 If you want to work on something here, take an issue and open a pull request. That is the
 whole process and it is open to anyone.
 
-Asking once is fine and nobody minds. Repeatedly offering paid work across multiple issues
-after being told no is treated as spam, and those accounts get blocked. That has nothing to
-do with the first question and everything to do with the tenth.
+Asking once is fine and nobody minds. Doing it in bulk is not.
+
+Posting a price on several issues at once, or continuing to do so after being told no here or
+on any other repository in this organisation, is treated as spam and **the account gets
+blocked**. It is the volume that makes it spam, not the question. One person asking one time
+gets a friendly no.
+
+Worth being direct about why, since it is not obvious. Issues here are written with the file,
+the line, the mechanism and usually the fix already in them, so that a stranger can start
+without asking permission. A comment that restates that analysis back and attaches a price has
+told me nothing I did not write myself, and it costs me a reply on every issue it lands on.
+That is the cost being guarded against.
 
 One related note, since detailed issues invite this. Many issues here carry a full diagnosis:
 the file, the line, the mechanism and often the suggested fix. That is deliberate, so a
