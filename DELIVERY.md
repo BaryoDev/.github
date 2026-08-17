@@ -1,0 +1,186 @@
+# How work ships here
+
+These projects are built with heavy AI assistance. That is not a disclaimer, it is the reason this
+document exists.
+
+Code arrives fast enough that reading it stops being a sufficient check. The failure mode is not
+code that looks wrong. It is code that looks entirely reasonable and is quietly untrue:
+documentation describing a feature that was never implemented, a test that passes against the bug
+it names, a dashboard number nobody can verify.
+
+**"I reviewed it carefully" is unfalsifiable.** What a stranger can check is a record: this ran,
+here, and here is the log. Every gate below exists because it caught something real, and each one
+is cited. A gate that has never caught anything is ceremony, and should be deleted rather than kept
+for the look of the thing.
+
+The rule everything else follows from:
+
+> Prefer observing a running system over reasoning about a static one.
+
+---
+
+## The phases
+
+1. **Brainstorm to a written spec.** Questions one at a time, two or three approaches with a
+   recommendation, then a spec file in the repo. The spec is the authority the plan argues from;
+   when the plan and the spec disagree later, the spec wins.
+2. **Plan into bite-sized tasks.** Exact file paths, real code, each task with its own test cycle.
+   Before any execution, scan the plan for conflicts between tasks and write the findings down.
+3. **Build task by task, fresh context each time.** One implementer per task, a reviewer on that
+   task's diff, then a fix loop. Decisions get recorded as rulings with what they cost if wrong, so
+   a later reader can tell a deliberate choice from an oversight.
+4. **Review the whole branch.** Not the same as the per-task reviews, and not optional.
+5. **Deploy to the playground and look at it.** A real server, behind a real proxy, at a real path.
+   Then actually use it. Load the page, click the thing, read the database.
+6. **Publish, gated on the above.** The pipeline refuses to publish a build the playground has not
+   run.
+
+---
+
+## The gates, and what each one caught
+
+### Whole-branch review
+
+A reviewer that sees the entire diff at once, after the per-task reviews have passed.
+
+**Caught:** a `Provider` config option that the README, `SECURITY.md` and the marketplace listing
+all told users to set to Azure Speech, and that nothing in the code read. Setting it booted cleanly
+and kept using the free endpoint. The option and the composer lived in different tasks, so no single
+task's diff contained both.
+
+A silently inert setting is worse than a missing one. The missing one fails at bind time; the inert
+one manufactures confidence.
+
+### Grep for the claim, not the files
+
+After any finding about something the project asserts, search for the assertion across the whole
+repo rather than fixing the files the reviewer named.
+
+**Caught:** three further copies of the same false claim after the review's two were fixed,
+including a live demo page selling a paid tier that did not exist. It sat in `tests/`, which no
+documentation pass would open. A reviewer scoped to a diff sees where a claim was changed, never
+everywhere it was made.
+
+### Mutation check
+
+Before trusting a new test, break the thing it covers and confirm it fails. A test written after
+the code passes immediately, which proves nothing.
+
+**Caught three times, twice in work written the same day:** a liveness assertion reading
+`Ceiling > Floor` that passed against the exact over-claim it described; a path-base test that
+asserted a variable was *declared* rather than *used*; and three shipped tests satisfied by their
+subject's own header comment.
+
+**A test that passes against the bug it names is not a test.**
+
+### Test in the configuration you ship
+
+Run the suite in Release, on the platform CI uses, with the whole suite running rather than one
+test in isolation.
+
+**Caught:** a test that failed only in Release on Linux, which no run had ever performed because CI
+built Release and tested Debug. The assembly consumers install had never had a test run against it.
+The cause was a port race in a test double that released its port before rebinding it, invisible
+when that test ran alone.
+
+### Install it as a package
+
+Pack to a local feed, install into a scratch project, build it, and assert the assets a consumer
+needs actually resolve.
+
+**Justified by:** static web assets, `.targets` files and per-framework dependency groups all
+resolve differently for a package than for the project reference every test and demo uses. A
+package can pack cleanly, pass every test, and be inert for the first person who installs it, with
+nothing anywhere to say so.
+
+### The playground gates the publish
+
+Compare what the live site serves against what is in the package, and refuse to publish if they
+differ.
+
+**Caught:** a backoffice publicly reachable on the playground, because nginx compares a location
+prefix byte for byte while ASP.NET routing does not, so `/Umbraco/login` sailed past a block on
+`/umbraco/`. No test host has a proxy in front of it.
+
+Compare bytes and assembly identity, not version strings. A version can be right while the deployed
+code is stale, and today's `0.1.0` and yesterday's `0.1.0` are the same string and different
+assemblies. Compare the client asset **and** a server-side build marker: a server-only change
+leaves the client byte identical, and server-side is where most defects live.
+
+### Look at the data, not the dashboard
+
+Query the actual table before believing any number computed from it.
+
+**Caught:** 35 of 40 rows in a live demo database were seeded or probe data, inflating the install
+count roughly eightfold, and one real row counted a browser in fullscreen as an installed app.
+
+### Mechanical guardrails, not review habits
+
+Branch protection, a public API approval snapshot, required status checks, a secrets scan. Things
+that hold when nobody is paying attention.
+
+**Caught:** a public API change that would have made a bug fix a major version bump, flagged by the
+approval snapshot with the versioning rule quoted back; and an unresolved review thread that
+correctly blocked a merge while every check was green.
+
+---
+
+## Say what you actually measured
+
+The most common failure is not broken code. It is a true-looking claim nobody can verify. It has
+appeared on four unrelated surfaces:
+
+- Documentation describing a provider that was never implemented.
+- A dashboard reading *12 installed*, when uninstall is not observable on any platform and the real
+  meaning is *12 have ever installed*.
+- A NuGet download count that is almost entirely mirrors and crawlers, with no NuGet client anywhere
+  in the breakdown.
+- A CI check reporting green while its reviewer was rate limited and had read nothing.
+
+So: **if you cannot verify it, the label says what was actually measured.** Not *12 installed* but
+*9 of 12 installs seen in the last 30 days*, with the window in the label rather than a tooltip. A
+number whose definition lives in a hover is a number people quote wrongly.
+
+The same applies to your own reporting. If tests fail, say so with the output. If a step was
+skipped, say it was skipped. A green tick you did not verify is not evidence.
+
+## Read a signal before trusting it
+
+| Signal | Looks like | Actually |
+|---|---|---|
+| Cancelled CI job | a failure in `gh pr checks` | a superseded run. Identical durations across jobs is the tell; `gh api .../jobs` says `cancelled` |
+| Green review bot | reviewed and approved | may mean rate limited and read nothing. Open the comment |
+| Marketplace 404 | rejected | usually scan latency. Re-check after the next sync before concluding |
+
+---
+
+## Setting up a new project
+
+Done once, at the start, before the first feature. All of it is cheaper now than retrofitted.
+
+- [ ] `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`. A repo whose README claims MIT
+      with no licence file cannot legally be used or forked.
+- [ ] Branch protection on the default branch: pull request required, no force push, no deletion,
+      conversations resolved. Approvals at **zero** while you are the only maintainer, or you lock
+      yourself out.
+- [ ] CI on pull requests, **in Release**, across every version you claim to support.
+- [ ] A required status check wired to a job that actually runs on pull requests. Protection with
+      no check is a turnstile.
+- [ ] A public API approval snapshot, with the versioning rule in its failure message.
+- [ ] An anti-vacuity check. A run that discovers no tests exits zero, so assert the count.
+- [ ] A secrets scan, with no path exemption on the rules that matter.
+- [ ] A playground deployment, and a publish workflow that refuses to publish without it.
+- [ ] Issue and pull request templates that ask for the failing case, not the intention.
+
+---
+
+## What this costs, and when to skip it
+
+The full process suits something that will be published, installed by strangers, or maintained by
+people you have not met. It is disproportionate for a spike, a throwaway script, or a one-line fix.
+
+Three parts are never worth skipping, at any size, because each caught something real:
+
+1. Run the tests in the configuration you ship.
+2. Break a new test to prove it can fail.
+3. Look at the running system before saying it works.

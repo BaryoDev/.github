@@ -62,6 +62,16 @@ get sorted out.
 
 ## Before you start
 
+**Read [DELIVERY.md](DELIVERY.md).** It is the standard your change will be held to, and it is
+short. These projects are built with heavy AI assistance, which is exactly why the checks are
+mechanical rather than a promise that someone looked carefully: a test has to fail before it is
+trusted, the suite runs in the configuration that ships, and nothing publishes that a real
+deployment has not run. Every gate in it is cited to a defect it caught, so none of it is ceremony.
+
+Two of those apply to a contribution of any size. **Break your new test and confirm it fails**,
+because a test written after the code passes immediately and proves nothing. And **say what you
+actually verified**, including what you skipped. A green tick nobody opened is not evidence.
+
 **For a bug, open an issue with a reproduction.** A failing test, a small program, or the
 exact calls that produce the wrong result. A reproduction is worth more than a careful
 description, because it turns a discussion into something measurable.
