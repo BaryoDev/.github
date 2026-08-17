@@ -186,12 +186,24 @@ down, which is exactly why it keeps happening.
 `head`, so the shell reported `head`'s exit status, the `|| echo failed` branch never fired, and
 silence read as success. CI found the real failure on the next push.
 
-Two shapes of the same mistake:
+Three shapes of the same mistake:
 
 - **A pipeline returns its last stage.** `cmd | grep x | head` tells you about `head`. Use
   `set -o pipefail`, or capture `${PIPESTATUS[0]}`, or run the command on its own line and check `$?`.
 - **A run that does nothing exits zero.** A test runner that discovers no test files, a linter given
   no matching paths, a loop whose input was empty. Assert the count, not the status.
+- **Console output is formatted for a human, and the formatting changes.** If you must read a
+  number out of a tool, read it from that tool's machine-readable output.
+
+**Caught, by the guard written for the second bullet above.** The anti-vacuity check asserted the
+test count by grepping the console reporter for `Test Files  1`. It passed locally and failed a CI
+run in which all 24 tests passed, because the runner colours that output and a laptop pipe does not,
+so ANSI escapes sat between the words. Reading `numTotalTests` from the JSON reporter is the same
+check with nothing to break.
+
+Worth sitting with: that was written in the same hour as this section, by someone who had just
+finished describing the failure. Knowing the rule is not the same as following it, which is the
+argument for gates over intentions.
 
 ### A declared requirement is not an enforced one
 
