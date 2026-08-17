@@ -73,39 +73,93 @@ subject's own header comment.
 
 **A test that passes against the bug it names is not a test.**
 
+### Gate the promise the project makes
+
+Every gate above is generic. This one is not, and it is the one most worth spending effort on:
+**whatever the project's headline claim is, something automatic has to check it.** A claim nothing
+tests is marketing.
+
+| Project | The promise | The gate |
+|---|---|---|
+| Verdict | zero allocation on the hot path | an allocation budget asserted in CI, not a benchmark you read |
+| read-aloud | a page reads itself aloud | the deployed site returns real `audio/mpeg` over 10 KB |
+| umbraco-pwa | the site is installable and works offline | the live manifest parses and carries name, start_url, display, icons |
+| BaryoVM | a deploy is one command | the built binary runs that command against a real VM |
+| Talaan | a spreadsheet round-trips | write a file, read it back, compare |
+
+If you cannot write this row for a project, the project does not yet know what it is promising.
+
 ### Test in the configuration you ship
 
-Run the suite in Release, on the platform CI uses, with the whole suite running rather than one
-test in isolation.
+Run the suite against the optimised build, on the platform CI uses, with the whole suite running
+rather than one test in isolation. Three separate variables, and each has hidden something:
+
+- **Configuration.** .NET `Release`, a minified or bundled JS build, a Go binary with its release
+  flags. The debug build is not the artifact.
+- **Platform.** Linux in CI, whatever you develop on locally.
+- **Concurrency.** The full suite, not one test alone.
 
 **Caught:** a test that failed only in Release on Linux, which no run had ever performed because CI
 built Release and tested Debug. The assembly consumers install had never had a test run against it.
-The cause was a port race in a test double that released its port before rebinding it, invisible
-when that test ran alone.
+The cause was a port race in a test double that released its port before rebinding it, and it was
+invisible when that test ran alone.
 
-### Install it as a package
+For a bundled JavaScript package the same gap is sharper: tests run against source modules while
+consumers get the bundle, so nothing has tested what ships unless something imports the built
+output.
 
-Pack to a local feed, install into a scratch project, build it, and assert the assets a consumer
-needs actually resolve.
+### Consume your own artifact the way a stranger would
 
-**Justified by:** static web assets, `.targets` files and per-framework dependency groups all
-resolve differently for a package than for the project reference every test and demo uses. A
-package can pack cleanly, pass every test, and be inert for the first person who installs it, with
-nothing anywhere to say so.
+Build the thing you publish, install it from a local source into an empty project, and use it.
+Never test only the source tree.
 
-### The playground gates the publish
+**Justified by:** every test and demo in these repos consumes the library through a project
+reference. Consumers do not. Static web assets, build targets and per-framework dependency groups
+all resolve differently for a package, so a package can pack cleanly, pass every test, and be inert
+for the first person who installs it, with nothing anywhere to say so.
 
-Compare what the live site serves against what is in the package, and refuse to publish if they
-differ.
+| Stack | What that means |
+|---|---|
+| .NET | `dotnet pack` to a local feed, `dotnet new`, `dotnet add package --source`, build, assert the assets resolve |
+| npm | `npm pack`, install the tarball into a scratch project, import it, run it. `npm publish --dry-run` lists files but proves nothing runs |
+| Go | build the binary, or `go install` from a module proxy, then execute it |
+| Container | run the built image, not the compose file you develop with |
+
+The npm case has its own trap worth naming: the published tarball is decided by `files`, `.npmignore`
+and the build output, none of which the repo working tree reflects. Installing the tarball is the
+only way to see what a consumer actually gets.
+
+### Exercise the deployed artifact before publishing
+
+Deploy the artifact somewhere real, use it, and make the publish refuse if the deployed thing is not
+the thing being published.
 
 **Caught:** a backoffice publicly reachable on the playground, because nginx compares a location
 prefix byte for byte while ASP.NET routing does not, so `/Umbraco/login` sailed past a block on
 `/umbraco/`. No test host has a proxy in front of it.
 
-Compare bytes and assembly identity, not version strings. A version can be right while the deployed
-code is stale, and today's `0.1.0` and yesterday's `0.1.0` are the same string and different
-assemblies. Compare the client asset **and** a server-side build marker: a server-only change
-leaves the client byte identical, and server-side is where most defects live.
+Compare **identity, not version strings**. A version can be right while the deployed code is stale,
+and today's `0.1.0` and yesterday's `0.1.0` are the same string and different builds. And compare
+the **server** half, not only anything the client downloads: a server-only change leaves client
+assets byte identical, and server-side is where most defects live. In .NET the assembly MVID works,
+because it is regenerated on every compilation; a commit sha baked in at build time works anywhere.
+
+**When there is no playground.** A CLI has no URL and a library has no deployment, so the gate is
+not "is it live" but *does the built artifact do the thing when a person uses it*:
+
+| Shape | The equivalent gate |
+|---|---|
+| CLI | run the built binary end to end against something real, not a mock |
+| Library | the scratch-consumer step above, plus one test that uses it as documented in the README |
+| Deployed app | the app **is** the playground. Deploy to a staging slot and assert its health before promoting |
+| Anything with a promise | the row you wrote in *Gate the promise the project makes* |
+
+The principle is the same in all four: **something that was built, not something that was compiled
+in a test host, has to be observed doing the job.**
+
+One thing to check whatever the shape: a 200 is not proof the endpoint exists. Umbraco answers 200
+with the site's own HTML for any unrecognised path, so a marker endpoint returned 200 before it was
+written. Assert the content type and the shape of the value, not the status.
 
 ### Look at the data, not the dashboard
 
@@ -166,13 +220,35 @@ Done once, at the start, before the first feature. All of it is cheaper now than
 - [ ] CI on pull requests, **in Release**, across every version you claim to support.
 - [ ] A required status check wired to a job that actually runs on pull requests. Protection with
       no check is a turnstile.
-- [ ] A public API approval snapshot, with the versioning rule in its failure message.
+- [ ] A machine-checked record of the public surface, with the versioning rule in its failure
+      message: `PublicApiGenerator` for .NET, `api-extractor` or a committed `.d.ts` for npm,
+      `apidiff` for Go. Anything that makes an accidental breaking change fail a build rather than
+      surprise a consumer.
 - [ ] An anti-vacuity check. A run that discovers no tests exits zero, so assert the count.
 - [ ] A secrets scan, with no path exemption on the rules that matter.
 - [ ] A playground deployment, and a publish workflow that refuses to publish without it.
 - [ ] Issue and pull request templates that ask for the failing case, not the intention.
 
 ---
+
+## Applied to these repos, 17 August 2026
+
+Run against six projects across three languages, to check it says something different about each
+rather than the same thing about all of them. It does:
+
+| | Missing |
+|---|---|
+| **Verdict** (.NET) | nothing on this list. Eight API snapshots, the fullest coverage here |
+| **dopaminejs** (npm) | nothing on this list |
+| **Mapsicle** (.NET) | a public API gate |
+| **Carom** (.NET) | a public API gate, and it has eleven open issues inviting contributors |
+| **Talaan** (.NET) | a changelog, a public API gate |
+| **BaryoVM** (Go) | a changelog, an `apidiff` gate |
+
+Two things that reading it alone would not have surfaced. **Carom is the most exposed**: it invites
+contributors into a library with no machine-checked public surface, so the first well-meaning pull
+request can break consumers with every check green. And **a missing changelog is not paperwork** on
+a published package: without one, a consumer deciding whether to upgrade has only a diff.
 
 ## What this costs, and when to skip it
 
