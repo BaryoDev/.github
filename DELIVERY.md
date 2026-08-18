@@ -264,6 +264,38 @@ non-expiring option is a deliberate setting.
 Worth a periodic link check in CI on the files that onboard people. Note that a bare `curl` is not
 enough for this class: the expiring invite returned `200` right up until it did not.
 
+### A failure with no commit behind it needs somewhere to go
+
+A gate that only fails on a pull request is watched, because somebody is waiting on that pull
+request. A gate that can fail on its own, with no commit behind it, is not watched by anybody.
+
+Dependency auditing is the obvious one. `NuGetAuditMode=all` with `TreatWarningsAsErrors=true`
+turns any newly published advisory against any transitive dependency into a red build, days or
+weeks after the last commit. So does an npm advisory, a base image moving, or a runtime reaching
+end of life.
+
+**Caught:** Mapsicle's audit job failed for at least three days on five advisories. Every other job
+was green: build and test passed on both operating systems, formatting passed, the
+core-stays-dependency-free check passed. Nothing announced the failure, because nothing was
+waiting on it. It surfaced only when the org's repositories were listed by download count for an
+unrelated reason, and Mapsicle turned out to have more downloads than every other package in the
+org combined.
+
+Two things this cost, and both are worth naming:
+
+- **Three days of a red default branch** on the most-used package, which is what a stranger sees.
+- **A wrong conclusion, briefly.** The red build was read as "users are on a broken package". They
+  were not: all five advisories reached test projects only and no shipped package was affected.
+  A red build says something failed, not what is exposed. Check which projects before saying who
+  is at risk.
+
+The same week, two of three other red repositories in the org had no commit behind them either.
+The world moved; the code did not.
+
+**What to do about it:** give these jobs their own schedule and their own notification, rather than
+leaving them to be noticed on the next pull request. If a job can fail without anyone pushing, it
+needs a route to a human that does not depend on anyone pushing.
+
 ### Publishing is not releasing
 
 Pushing a package is one step. If the repository does not also record what shipped, the project
