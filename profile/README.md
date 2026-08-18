@@ -128,4 +128,33 @@ The same conventions across every repo, which is the point:
 
 ---
 
+## Thank you
+
+These projects are unfunded and everything here is voluntary, so every one of
+these is someone choosing to spend their evening on somebody else's codebase.
+Named for what they actually did, because "3 contributions" tells you nothing
+about the work.
+
+| | |
+| --- | --- |
+| [**@snowyukitty**](https://github.com/snowyukitty) | Found that Verdict returned pooled buffers to the pool only on the success path, so an enumeration that threw leaked them. Shipped in `Verdict 2.8.0` |
+| [**@zacharywomack8-source**](https://github.com/zacharywomack8-source) | Noticed three Carom packages were being published to NuGet while missing from the solution file, so CI had never built them. Also killed a test that slept for about fifteen minutes on every run |
+| [**@BabuBahir**](https://github.com/BabuBahir) | Conditional Swagger for BarakoCMS. Then worked out that `GET /api/content-types` reads a document type nothing ever writes, and, more usefully, that fixing it the obvious way would have published the whole schema to anonymous callers |
+| [**@ahmdkaml**](https://github.com/ahmdkaml) | The BarakoCMS sitemap endpoint, and public search text. Turned around a long review in an afternoon and asked the right question before writing code |
+| [**@alitorabi-dev**](https://github.com/alitorabi-dev) | Made the Umbraco PWA package report readiness failures at startup instead of staying quiet until someone noticed the install prompt never appeared |
+| [**@bharathh866**](https://github.com/bharathh866) | Read the Umbraco Marketplace listing properly and said what was wrong with it, including cards that were cutting off. Feedback nobody is obliged to give |
+| [**@jlongyam**](https://github.com/jlongyam) | Fixed a typo in an rnxjs sample binding. Small, and it was wrong for a long time before somebody bothered |
+
+From Japan, Egypt, Iran and a few places not stated. Thank you, genuinely.
+
+**Want to join them?** Every repo has issues tagged
+[`good first issue`](https://github.com/search?q=org%3ABaryoDev+is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22&type=issues)
+and [`help wanted`](https://github.com/search?q=org%3ABaryoDev+is%3Aissue+is%3Aopen+label%3A%22help+wanted%22&type=issues).
+Comment `/take` on one and it is assigned to you within the minute, no waiting on
+a maintainer. The one rule is that a change needs a test that fails without it,
+and there is a worked guide for that in
+[TESTING.md](https://github.com/BaryoDev/.github/blob/main/TESTING.md).
+
+---
+
 🌐 [baryo.dev](https://baryo.dev) · 📦 [NuGet](https://baryo.dev/nuget) · [npm](https://baryo.dev/packages) · [Docker Hub](https://baryo.dev/docker) · ✍️ [Blog](https://baryodev.medium.com/) · 📫 [Say hello](https://baryo.dev/about)
