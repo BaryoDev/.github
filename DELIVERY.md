@@ -307,6 +307,29 @@ broken; the release job simply never tagged. The costs are real anyway: `git log
 not resolve, so *what has landed since we shipped* cannot be answered from the repository, and a
 contributor whose work merged has nothing that tells them it reached users.
 
+### The registry reads your docs
+
+Before publishing, defang executable-looking payload strings in every file the package tarball
+ships (README, CHANGELOG). Documentation of what your security layer *rejects* must not itself be a
+working payload: `'; DELETE FROM users --` documents the same attack class as `'; DROP TABLE users
+--` without pattern-matching a scanner. When a publish fails with a generic policy error, bisect
+with the cheapest oracle available before believing any hypothesis.
+
+**Caught:** rnxORM 2.2.0 was unpublishable for a night — npm's publish-time content scanner
+rejected the tarball because the README and CHANGELOG documented SQL-injection payloads
+(`DROP TABLE` strings) as examples of input the ORM now rejects. The 403 was generic
+("forbidden by your security policy"), identical across OIDC trusted publishing, staged
+publishing, and owner-interactive publishing, which produced four plausible wrong diagnoses in
+sequence: trusted-publisher misconfiguration, 2FA publishing access, a staged-publish mandate, and
+a blocked package name — the last one far enough to rename the package before the truth surfaced.
+The tell that broke it open: a trivial probe package under the same account sailed to a normal OTP
+prompt. From there, bisection with an EOTP-vs-403 oracle (a publish stopped at the OTP prompt has
+passed policy without publishing anything) pinned the trigger to the payload strings in two
+minutes. Nothing in any error message, debug log, or status page named the real cause.
+
+A scanner that cannot tell documentation from payload is still the gate you must pass. Design the
+docs for it, and when a generic rejection resists three explanations, stop theorizing and bisect.
+
 ---
 
 ## Say what you actually measured
