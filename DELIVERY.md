@@ -161,6 +161,22 @@ One thing to check whatever the shape: a 200 is not proof the endpoint exists. U
 with the site's own HTML for any unrecognised path, so a marker endpoint returned 200 before it was
 written. Assert the content type and the shape of the value, not the status.
 
+### An argued consequence is an issue, not a PR
+
+Before opening a PR on someone else's project, the body has to answer the maintainer's first
+question, "what was the use case that got you here", with something that ran. If the strongest
+honest sentence about the consequence is "argued rather than demonstrated", file it as an issue and
+hand the design fork to the maintainer. The check is mechanical: read your own PR body for that
+admission before you open it.
+
+**Caught, by the maintainer rather than a mechanism, which is the point:** Marten #5302 fixed a
+real silent no-op, transaction participants accepted and never invoked under an ambient
+transaction, with an honest failing test on master. Closed the same day: "I do not want to support
+ambient transactions inside of projections, full stop." The PR body already contained the
+admission, "argued rather than demonstrated here"; nothing read it before the PR went out. The fix
+looked mechanical because three sibling lifetimes did it right, but whether the combination should
+be supported at all was a design fork, and design forks belong in issues.
+
 ### Look at the data, not the dashboard
 
 Query the actual table before believing any number computed from it.
@@ -393,7 +409,7 @@ request can break consumers with every check green. And **a missing changelog is
 a published package: without one, a consumer deciding whether to upgrade has only a diff.
 
 **barakoCMS publishes in the wrong order**, which is the one worth fixing first anywhere it appears.
-Its release job graph is `test` → `publish` → `deploy-playground`: packages and public images go out,
+Its release job graph runs `test`, then `publish`, then `deploy-playground`: packages and public images go out,
 and only then does anything get deployed and looked at. Phase 6 above says the opposite, and the
 reason is asymmetry. A bad deploy is rolled back in a minute. A bad publish is permanent. Package
 registries do not delete, they unlist, and anyone who already resolved the version keeps it. **Put
