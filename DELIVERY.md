@@ -168,6 +168,52 @@ Query the actual table before believing any number computed from it.
 **Caught:** 35 of 40 rows in a live demo database were seeded or probe data, inflating the install
 count roughly eightfold, and one real row counted a browser in fullscreen as an installed app.
 
+### Read the board before you write code
+
+Check open pull requests and issues on a repo before starting work on it. On anything that invites
+contributions, do it every time.
+
+**Caught, badly and late:** a maintainer filed an issue and built a fix for a problem a first-time
+contributor had already solved in an open pull request a day earlier. The duplicate was noticed by
+accident during an unrelated sweep, not by any check, and only because somebody thought to ask what
+else was outstanding.
+
+The cost lands on the contributor, not on you. Having your first contribution silently duplicated by
+the person you contributed to is the most discouraging outcome available, and it is invisible from
+the maintainer's side: the work still gets done, the issue still closes, and nothing looks wrong.
+
+Two mechanisms, because the habit alone did not hold:
+
+- **Watch your own repositories.** Guardrails decide what may merge; none of them tell you anything
+  arrived. Four pull requests sat for a day and a half on a repo whose owner was not subscribed to
+  it, because org repos do not notify their owner by default.
+- **Assign yourself, or comment, before starting.** The `/take` convention exists for contributors
+  and applies to maintainers for the same reason.
+
+### A contributor's licence grant is not a process rule
+
+Branch protection can be overridden by an admin when the situation warrants it. A CLA check cannot,
+and the difference is worth being explicit about because both appear as a red check on a pull
+request.
+
+Protection rules govern process on your own repository. A CLA is the **licence grant** that lets you
+redistribute someone else's code under your terms. Overriding it does not create the grant; it only
+removes the thing that was checking for one, and the package still ships their work without it.
+
+**Encountered:** three pull requests blocked as unsigned from a contributor who *had* signed. The
+signature covered the whole organisation. It could not attach because the commits carried an email
+with no numeric ID prefix, so GitHub resolved them to no account at all and the CLA service had no
+identity to match. A fourth pull request from the same person, using the ID-prefixed address, passed
+immediately.
+
+So read an unsigned CLA as a question about **identity** before assuming refusal, and never as
+something to wave through:
+
+- `username@users.noreply.github.com` resolves to nobody. `12345678+username@users.noreply.github.com` resolves to the account.
+- A commit authored by a tool identity, `Agent Core <agent@agent-core.local>` in this case, can never
+  be covered by anyone's signature, because a CLA is an agreement with a person. Set the tool's git
+  identity to a real contributor or every pull request it produces is permanently unmergeable.
+
 ### Mechanical guardrails, not review habits
 
 Branch protection, a public API approval snapshot, required status checks, a secrets scan. Things
