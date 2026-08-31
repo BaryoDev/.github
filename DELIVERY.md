@@ -93,6 +93,31 @@ visible.
 
 **`git add -A` is silent about what it ignored.** That silence is the failure, not the rule.
 
+### Absence of output is not absence of the thing
+
+A diagnostic step that prints nothing looks the same as a diagnostic step
+reporting nothing is there. If a check exists to answer a question, make it
+assert the answer rather than print material for a human to read.
+
+**Caught:** a CI matrix leg was added to run the suite on .NET 10, with a comment
+explaining that installing only that SDK left the net8.0 assemblies no 8.0
+runtime to load, so they would roll forward. A step printed `dotnet --info` for
+evidence. Its `sed` pattern was case-sensitive, matched nothing, and printed only
+a version header. Grepping that empty output for a .NET 8 runtime found none,
+which read as confirmation and went into the pull request as verified.
+
+The hosted image ships .NET 8, 9 and 10, `setup-dotnet` adds to them rather than
+replacing them, and roll-forward never engages when an exact match is present.
+Both legs had been running the net8.0 assets on .NET 8.0.30. The second leg
+tested nothing the first did not, which is the exact failure the matrix was added
+to avoid.
+
+Replacing the print with an assertion caught it on the first run. The real fix was
+to multi-target the test projects, because targeting the framework is the only
+thing that moves the runtime.
+
+**A step whose output nobody fails on is a comment.**
+
 ### Assert the middle, not just the edges
 
 A test that checks the first and last element of a collection, or its count, will pass while
