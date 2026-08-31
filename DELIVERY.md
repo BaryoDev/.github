@@ -73,6 +73,40 @@ subject's own header comment.
 
 **A test that passes against the bug it names is not a test.**
 
+**And check the mutation, not just the test.** Proving an allocation gate could fail meant making
+the code allocate. Boxing a `bool` was the obvious way, the gate stayed green, and for a moment that
+looked like a broken gate. The JIT had elided the box, so nothing allocated and the gate was right.
+`GC.KeepAlive(new object())` turned it red immediately. A mutation the compiler optimises away
+proves nothing in either direction, which is the same trap one level up.
+
+### A file on your disk is not a file in the repository
+
+Run the checks against a fresh checkout, not your working tree. Anything that reads files from the
+repo, a link checker, a docs test, a template renderer, is checking your machine unless CI runs it.
+
+**Caught:** eight package guides were written, the docs index linked all eight, and every test
+passed locally. `.gitignore` had an unanchored `packages/` rule meant for a NuGet folder, which also
+matched `docs/packages/`, so `git add -A` skipped all eight without a word and the branch shipped a
+documentation index pointing at nothing. The link test passed on the laptop because the files were
+there. It failed on the first CI run, on a clean clone, which is the only place the difference is
+visible.
+
+**`git add -A` is silent about what it ignored.** That silence is the failure, not the rule.
+
+### Assert the middle, not just the edges
+
+A test that checks the first and last element of a collection, or its count, will pass while
+everything between them is destroyed.
+
+**Caught:** a pooled buffer was returned to `ArrayPool` with `clearArray: true` and then copied out
+of, one line too late, so every item collected before the first buffer doubling came back blank: 16
+of 17, 512 of 2000. Two tests covered that code path. One asserted the count and the final element,
+and the final element is written after the loss. The other used a collection type that took a
+different branch entirely. Both were green. Asserting every index, at sizes that straddle each
+doubling, fails immediately.
+
+**Count is not content.**
+
 ### Gate the promise the project makes
 
 Every gate above is generic. This one is not, and it is the one most worth spending effort on:
