@@ -353,6 +353,45 @@ broken; the release job simply never tagged. The costs are real anyway: `git log
 not resolve, so *what has landed since we shipped* cannot be answered from the repository, and a
 contributor whose work merged has nothing that tells them it reached users.
 
+### A field added to a config is not a field that arrives
+
+When a call site takes a configuration object and unpacks selected fields by hand to pass onward,
+adding a field to that object does nothing on that path. The compiler is content, the tests are
+content, and the new setting is silently ignored wherever the unpacking happens. The fix is to pass
+the object through, not to add the field in every place that takes it apart.
+
+**Caught:** in Carom 2.0, by the review bot, in the same release whose headline fix was that a
+one-state-per-key rule existed in three copies and was fully enforced in one. That release added a
+configurable retry delay cap and made the synchronous entry point throw on a timeout it cannot
+honour. Three extension packages accepted the config struct and unpacked chosen fields by hand, so
+both new fields were dropped: a 50 ms cap took 5,615 ms through an extension against 170 ms through
+the core, and a timeout that threw on the core path was accepted in silence on all three extension
+paths. 948 tests were green.
+
+The uncomfortable part is that the release existed to fix exactly this shape of defect and
+reproduced it within itself. A rule applied in one place and not the others is not a bug you fix
+once; it is a shape you keep making until the structure stops allowing it. Passing the whole object
+was the fix, because it makes the next field impossible to drop.
+
+### Queueing work is not running it
+
+A test whose point is to create a condition must wait for that condition to exist before asserting.
+Queueing background work and proceeding immediately tests whatever the scheduler happened to do.
+
+**Caught:** a timeout test queued `ProcessorCount * 4` blocking work items to saturate the thread
+pool, then went straight to its assertions. Nothing waited for a single worker to start, so the
+assertions usually ran against an idle pool. It passed on every run, having never once created the
+condition it was written to create.
+
+Making each worker signal a countdown and waiting for all of them turned it red on the first run.
+What it exposed was not the intermittent failure it was written to catch: under real saturation the
+pool cancels the queued task before the action starts, and the strategy surfaced a cancellation
+exception where its contract promised a timeout. A wrong exception type had been sitting behind a
+green test, invisible because the test's own precondition was never checked.
+
+A test with an unasserted precondition is a test of nothing, and it is worse than no test, because
+it occupies the space where the real one would have gone.
+
 ---
 
 ## Say what you actually measured
