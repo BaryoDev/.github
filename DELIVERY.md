@@ -132,6 +132,27 @@ doubling, fails immediately.
 
 **Count is not content.**
 
+### A completeness check must derive its subject, and key on what distinguishes a row
+
+A test that answers "did we miss one" is only worth having if it can say no. Two ways it cannot,
+and both look identical to a working one:
+
+**It reads a list somebody maintains.** Then it answers "no" by construction, because the list and
+the thing it describes are updated by the same hand at the same moment, or not at all.
+
+**Its key is coarser than the rows.** A check keyed on path, over rows keyed on verb and path,
+passes when a verb goes missing from a path that still has another.
+
+**Caught five times in one day, on the same migration:** a fixture seeding a hand-written list of
+modules, stale within hours of being written when a module gained a capability; two test-side lists
+of the same shape, one of which stayed green while the thing it checked did nothing at all; a route
+inventory covering 32 of 35 while its doc comment claimed all; and a coverage test comparing paths
+while its rows distinguished verbs. Three of the five were written to replace an earlier list of
+exactly the same kind.
+
+Derive the set from the running system, key on everything that tells two entries apart, and assert a
+floor: a reflection query that matches nothing fails the same way a correct one passes.
+
 ### Gate the promise the project makes
 
 Every gate above is generic. This one is not, and it is the one most worth spending effort on:
