@@ -692,6 +692,52 @@ minutes. Nothing in any error message, debug log, or status page named the real 
 A scanner that cannot tell documentation from payload is still the gate you must pass. Design the
 docs for it, and when a generic rejection resists three explanations, stop theorizing and bisect.
 
+### A number typed into a page is a claim nothing checks
+
+Any figure a page states about the project (a count of packages, a version, a download total) is
+read from the thing that owns it at build time, never typed into the markup. A script fails the
+build on a literal that looks like one.
+
+**Caught:** the barakocms.com design said "thirteen modules, all at 4.0.0". The repository had
+fourteen module projects. NuGet had thirteen, but a different thirteen: the design named
+`BarakoCMS.Email.Smtp`, which has never been published, and omitted `BarakoCMS.Files.S3`, which
+has. The published core was `3.21.0` and every module was on `0.x`. Three wrong claims from one
+habit, in a document whose own stated rule was that every claim is checkable or cut.
+
+Nothing was going to catch this. The export check asserted `grep -q "barakocms-module"` against the
+built page, which passes whether the page says thirteen or thirty. A page of wrong numbers built
+cleanly, passed every gate, and would have shipped. A person reading nuget.org caught it, which
+means there was no mechanism.
+
+Once the numbers came from the fetch, the same rendering also stopped being able to go stale: a
+module published tomorrow appears, and one that exists only in the repository does not.
+
+**The gate has to fail on the shape the code actually has.** The first version of this script
+required the package id and the version number to appear on the same line. The card that produced
+the original wrong claim puts them on different lines, so the exact markup the gate existed to
+reject sailed through it. It was reported as verified after only the other half of it had been
+exercised. Rewritten to match any version inside JSX text, it immediately found four more typed
+claims nobody had noticed, in a roadmap section that had never been looked at.
+
+### A fallback that renders identically to the real thing
+
+When a build-time fetch is allowed to fail without failing the build, the page it produces must say
+that it is degraded. Otherwise the fallback is a silent wrong answer with a green build behind it.
+
+**Caught twice on the same site, one of them in production.** The module list falls back to a
+bundled snapshot when NuGet is unreachable, which is correct: an outage should not stop a deploy.
+The rewritten page dropped the `live` flag the previous page had used, so an outage would have
+rendered frozen version numbers formatted exactly like current ones, with nothing saying so.
+
+The second one actually shipped. The changelog credits contributors from the commits API, and
+GitHub allows sixty unauthenticated requests an hour per IP. That budget was spent, the build
+warned and fell back as designed, and the site went live with every contributor missing. The
+warning was in the log. Nobody read the log, because the build was green and the deploy succeeded.
+
+**A warning is not a gate.** Either the degraded state is visible on the page, or the build fails,
+or nobody will ever know which one they are looking at. Passing the token that lifts the limit is
+the fix for the cause; saying "showing a cached list" on the page is the fix for the class.
+
 ---
 
 ## Say what you actually measured
