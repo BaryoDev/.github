@@ -392,6 +392,46 @@ green test, invisible because the test's own precondition was never checked.
 A test with an unasserted precondition is a test of nothing, and it is worse than no test, because
 it occupies the space where the real one would have gone.
 
+### A step that fails hides every step behind it
+
+Lint, typecheck and tests as sequential steps in one job means the first failure decides what
+anybody learns. The steps after it do not report, and their state is not unknown-and-noticed, it is
+unknown-and-invisible, because the job already has a red mark against it and the red mark has a
+cause. Give the later steps a condition, or give them their own jobs.
+
+**Caught:** barakoBrew lost its entire repository setup to this, over a one-line ignore, the day
+after the setup was opened.
+
+`npm run lint` passes no path, so ESLint read the whole tree, and the config never excluded `docs/`.
+The design handoff ships vendored single-file prototypes whose bundled React still calls
+`ReactDOM.render` and assigns to `module`. Two errors, exit 1, in files that say nothing about the
+codebase. Typecheck and Unit tests were declared after Lint with no condition, so in all six runs
+they read:
+
+```
+Lint        failure
+Typecheck   skipped
+Unit tests  skipped
+```
+
+The setup pull request was closed the next day and not revived, which left the repository with no
+`.github/` at all: no CI, no CodeQL, no Dependabot, no templates, no CODEOWNERS. Not one check has
+run on master since it was created.
+
+What the concealment cost, found four days later by running the two skipped commands by hand:
+master's unit suite does not pass. One test read the API's C# enum out of a sibling checkout, to
+hold the console's status list against the server's, and the split moved that file one directory
+deeper. It broke at the split and nothing has executed it since. So the gate that would have caught
+a status diverging between the two halves of one product was itself broken, quietly, from the
+moment the two halves existed.
+
+Two further things worth naming from the same incident. The Actions tab listed CI and CodeQL the
+whole time, linking to `blob/master/.github/workflows/`, because GitHub keeps a workflow
+registration after the branch that introduced it is abandoned. Registration is not execution, and
+the tab reads identically either way. And the lint scope was the real defect: a gate pointed at
+vendored reference material fails for reasons that say nothing about the code, and the second time
+it does that, somebody turns the gate off rather than the scope down.
+
 ---
 
 ## Say what you actually measured
