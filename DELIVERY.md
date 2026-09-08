@@ -432,6 +432,52 @@ the tab reads identically either way. And the lint scope was the real defect: a 
 vendored reference material fails for reasons that say nothing about the code, and the second time
 it does that, somebody turns the gate off rather than the scope down.
 
+### Every gate here reads text, and half of what an agent produces is not text
+
+The house style scan, the review bot, the whole-branch review and the grep-for-the-claim rule all
+read a diff. An image is not a diff. Neither is a generated document, a lock file or a fixture.
+Whatever an agent makes that a reviewer cannot read is a blind spot by construction rather than by
+oversight, and it is invisible in the way that matters most, because everything around it is green.
+
+The specific thing to look for is attribution: agents that generate images embed a signed manifest
+naming the tool that made them. C2PA in a PNG is an optional named chunk, in a WebP a chunk, in a
+JPEG a segment near the front, in an SVG a metadata element. It travels with the file into whatever
+the build packs it into.
+
+**Caught, twice, in projects that had every other check passing.**
+
+A change swapping the icons on fourteen published packages came through clean. Each exported image
+carried about five and a half kilobytes of signed provenance manifest, and the build packed those
+images into every package. It was one merge from being published under a person's name on a public
+registry. That incident is written up as section 9 of
+[the lean agent method](https://github.com/arnelirobles/lean-agent-method), which is where the
+scanner below comes from.
+
+Then again here, four days later, in barakoBrew. Nine regenerated design screenshots, 5,758 bytes of
+C2PA manifest each. Six CI jobs were green over them, including an axe pass and a full unmocked run
+of the console against a real API. Nothing in that suite could see inside a PNG. It was found by
+pointing a byte-level scanner at the tree, and fixed before the pull request merged only because
+that pull request happened to be blocked rather than queued.
+
+Three rules come out of it.
+
+**Gate the bytes.** Parse each container and fail on anything that is not picture data. Detection is
+cheap: `strings file.png | grep -i c2pa` tells you today whether you have this, and most people who
+generate assets do. Treat an unrecognised chunk as a finding too, so a provenance format that does
+not exist yet still trips it.
+
+**Filter, do not re-encode.** Running everything through an image tool with a strip flag works and
+rewrites every pixel, which changes the file hash. If any of your evidence is a hash, you have just
+invalidated it and you will not notice. Drop the optional chunks and leave the compressed stream
+alone, then prove it: hash the image data before and after and refuse the write if they differ.
+
+**Scan the whole repository, not the diff.** The first run of this check found a file carrying a
+screenshot's camera metadata since the day it was committed, months earlier. That is true of every
+check scoped to a diff.
+
+One process note that nearly cost the fix: a branch in a merge queue cannot be pushed to. Know how
+to pull one out before you need to, because the window is however long the queue takes.
+
 ---
 
 ## Say what you actually measured
