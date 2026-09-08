@@ -408,7 +408,7 @@ The design handoff ships vendored single-file prototypes whose bundled React sti
 codebase. Typecheck and Unit tests were declared after Lint with no condition, so in all six runs
 they read:
 
-```
+```text
 Lint        failure
 Typecheck   skipped
 Unit tests  skipped
