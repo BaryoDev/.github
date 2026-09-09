@@ -251,6 +251,27 @@ Worth sitting with: that was written in the same hour as this section, by someon
 finished describing the failure. Knowing the rule is not the same as following it, which is the
 argument for gates over intentions.
 
+### A search that edits a file has to be told where to look
+
+A script that finds its place in a file by matching a landmark will take the first match. The first
+match is not necessarily the one meant, and nothing about the exit code says which one it took.
+
+**Caught:** the changelog assembler filing a release's entries into the previous release's notes. It
+looked for its `### Fixed` heading with an unscoped search, and a release empties the Unreleased
+section, headings included, so the first match in the file belonged to the version that had just
+shipped. Seven entries, two of them security, went into the notes of a release that was already
+published, where the next release body would never read them. The script printed
+`Assembled 5 into Fixed` and exited zero.
+
+The intent was in the code, in words: the error it raises when the heading is missing says "in the
+unreleased section". Nobody had written the part that made it so. A comment describing the scope is
+not a scope.
+
+Caught by reading the diff rather than by any gate, which is the answer that says a gate was
+missing. There is one now: searches are scoped to the Unreleased section, a missing heading is
+created in place, and a fixture test asserts where an entry lands. It was watched failing before it
+was trusted, 0 of 6 against the old logic and 6 of 6 after.
+
 ### A declared requirement is not an enforced one
 
 When a manifest says which runtime or platform it needs, something has to check that. Most package
