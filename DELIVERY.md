@@ -377,8 +377,22 @@ was the fix, because it makes the next field impossible to drop.
 
 A deploy step that installs config from the repo overwrites whatever is on the server, including
 changes the repo has never seen. No check in the repo can detect an omission relative to a file it
-does not have. Diff the installed file against the repo copy before installing it, and treat a
-difference as unreviewed work to fold in rather than drift to flatten.
+does not have. Diff the installed file against the repo copy before installing it, fail on any
+difference, and fold the difference in rather than flattening it.
+
+Fail closed, in the deploy step itself, naming both paths:
+
+```bash
+# baryoweb: deploy/nginx-baryo-web-locations.conf installs as
+# /etc/nginx/snippets/baryo-web-locations.conf
+diff -u /etc/nginx/snippets/baryo-web-locations.conf deploy/nginx-baryo-web-locations.conf || {
+  echo "installed config differs from the repo copy; reconcile before installing" >&2
+  exit 1
+}
+```
+
+A difference is not noise to clear on the way past. It is work someone did on the server that no
+review has seen, and the deploy is the moment it gets destroyed.
 
 **Caught:** by a question, which is the problem. baryo.dev's nginx snippet in git was two changes
 behind `/etc/nginx/snippets/`. The box already answered 410 on the retired barakoCMS paths, and it
