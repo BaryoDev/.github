@@ -373,6 +373,45 @@ reproduced it within itself. A rule applied in one place and not the others is n
 once; it is a shape you keep making until the structure stops allowing it. Passing the whole object
 was the fix, because it makes the next field impossible to drop.
 
+### A config file in the repo is a copy, not the deployment
+
+A deploy step that installs config from the repo overwrites whatever is on the server, including
+changes the repo has never seen. No check in the repo can detect an omission relative to a file it
+does not have. Diff the installed file against the repo copy before installing it, fail on any
+difference, and fold the difference in rather than flattening it.
+
+Fail closed, in the deploy step itself, naming both paths:
+
+```bash
+# baryoweb: deploy/nginx-baryo-web-locations.conf installs as
+# /etc/nginx/snippets/baryo-web-locations.conf
+diff -u /etc/nginx/snippets/baryo-web-locations.conf deploy/nginx-baryo-web-locations.conf || {
+  echo "installed config differs from the repo copy; reconcile before installing" >&2
+  exit 1
+}
+```
+
+A difference is not noise to clear on the way past. It is work someone did on the server that no
+review has seen, and the deploy is the moment it gets destroyed.
+
+**Caught:** by a question, which is the problem. baryo.dev's nginx snippet in git was two changes
+behind `/etc/nginx/snippets/`. The box already answered 410 on the retired barakoCMS paths, and it
+included `baryo-blog-redirects.conf`: 25 per-post redirects generated from the pre-decommission
+backup when the blog was retired, so that each post kept a working URL to its Medium original or to
+barakocms.com. Git had no copy of that file. The server held the only one. Installing the repo
+version would have dropped the include and 404'd every retired blog URL, and un-retired a
+`/feed.xml` that no longer exists.
+
+`nginx -t` passed on the repo version. So did a route table run against a real nginx serving the
+real build: twelve paths, every one correct, including the case-sensitivity split between
+`/barakocms` and `/barakoCMS`. Everything was green, because every check tested what the file said
+and nothing tested what the file had stopped saying.
+
+It surfaced only because the deploy was blocked on a missing SSH key, and a question about how a
+sibling repo authenticates led to noticing that the deploy target was the machine the work was
+already happening on. That made a diff possible. Nothing else in the session would have asked for
+one, because the repo copy looked complete and every gate agreed.
+
 ### Queueing work is not running it
 
 A test whose point is to create a condition must wait for that condition to exist before asserting.
