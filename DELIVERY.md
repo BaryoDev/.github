@@ -431,6 +431,92 @@ green test, invisible because the test's own precondition was never checked.
 A test with an unasserted precondition is a test of nothing, and it is worse than no test, because
 it occupies the space where the real one would have gone.
 
+### A step that fails hides every step behind it
+
+Lint, typecheck and tests as sequential steps in one job means the first failure decides what
+anybody learns. The steps after it do not report, and their state is not unknown-and-noticed, it is
+unknown-and-invisible, because the job already has a red mark against it and the red mark has a
+cause. Give the later steps a condition, or give them their own jobs.
+
+**Caught:** barakoBrew lost its entire repository setup to this, over a one-line ignore, the day
+after the setup was opened.
+
+`npm run lint` passes no path, so ESLint read the whole tree, and the config never excluded `docs/`.
+The design handoff ships vendored single-file prototypes whose bundled React still calls
+`ReactDOM.render` and assigns to `module`. Two errors, exit 1, in files that say nothing about the
+codebase. Typecheck and Unit tests were declared after Lint with no condition, so in all six runs
+they read:
+
+```text
+Lint        failure
+Typecheck   skipped
+Unit tests  skipped
+```
+
+The setup pull request was closed the next day and not revived, which left the repository with no
+`.github/` at all: no CI, no CodeQL, no Dependabot, no templates, no CODEOWNERS. Not one check has
+run on master since it was created.
+
+What the concealment cost, found four days later by running the two skipped commands by hand:
+master's unit suite does not pass. One test read the API's C# enum out of a sibling checkout, to
+hold the console's status list against the server's, and the split moved that file one directory
+deeper. It broke at the split and nothing has executed it since. So the gate that would have caught
+a status diverging between the two halves of one product was itself broken, quietly, from the
+moment the two halves existed.
+
+Two further things worth naming from the same incident. The Actions tab listed CI and CodeQL the
+whole time, linking to `blob/master/.github/workflows/`, because GitHub keeps a workflow
+registration after the branch that introduced it is abandoned. Registration is not execution, and
+the tab reads identically either way. And the lint scope was the real defect: a gate pointed at
+vendored reference material fails for reasons that say nothing about the code, and the second time
+it does that, somebody turns the gate off rather than the scope down.
+
+### Every gate here reads text, and half of what an agent produces is not text
+
+The house style scan, the review bot, the whole-branch review and the grep-for-the-claim rule all
+read a diff. An image is not a diff. Neither is a generated document, a lock file or a fixture.
+Whatever an agent makes that a reviewer cannot read is a blind spot by construction rather than by
+oversight, and it is invisible in the way that matters most, because everything around it is green.
+
+The specific thing to look for is attribution: agents that generate images embed a signed manifest
+naming the tool that made them. C2PA in a PNG is an optional named chunk, in a WebP a chunk, in a
+JPEG a segment near the front, in an SVG a metadata element. It travels with the file into whatever
+the build packs it into.
+
+**Caught, twice, in projects that had every other check passing.**
+
+A change swapping the icons on fourteen published packages came through clean. Each exported image
+carried about five and a half kilobytes of signed provenance manifest, and the build packed those
+images into every package. It was one merge from being published under a person's name on a public
+registry. That incident is written up as section 9 of
+[the lean agent method](https://github.com/arnelirobles/lean-agent-method), which is where the
+scanner below comes from.
+
+Then again here, four days later, in barakoBrew. Nine regenerated design screenshots, 5,758 bytes of
+C2PA manifest each. Six CI jobs were green over them, including an axe pass and a full unmocked run
+of the console against a real API. Nothing in that suite could see inside a PNG. It was found by
+pointing a byte-level scanner at the tree, and fixed before the pull request merged only because
+that pull request happened to be blocked rather than queued.
+
+Three rules come out of it.
+
+**Gate the bytes.** Parse each container and fail on anything that is not picture data. Detection is
+cheap: `strings file.png | grep -i c2pa` tells you today whether you have this, and most people who
+generate assets do. Treat an unrecognised chunk as a finding too, so a provenance format that does
+not exist yet still trips it.
+
+**Filter, do not re-encode.** Running everything through an image tool with a strip flag works and
+rewrites every pixel, which changes the file hash. If any of your evidence is a hash, you have just
+invalidated it and you will not notice. Drop the optional chunks and leave the compressed stream
+alone, then prove it: hash the image data before and after and refuse the write if they differ.
+
+**Scan the whole repository, not the diff.** The first run of this check found a file carrying a
+screenshot's camera metadata since the day it was committed, months earlier. That is true of every
+check scoped to a diff.
+
+One process note that nearly cost the fix: a branch in a merge queue cannot be pushed to. Know how
+to pull one out before you need to, because the window is however long the queue takes.
+
 ---
 
 ## Say what you actually measured
