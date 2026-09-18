@@ -257,6 +257,36 @@ admission, "argued rather than demonstrated here"; nothing read it before the PR
 looked mechanical because three sibling lifetimes did it right, but whether the combination should
 be supported at all was a design fork, and design forks belong in issues.
 
+### A gate must render the state it checks
+
+An accessibility or contract check that only ever loads an empty or data-free mocked page has not
+checked anything that needs data to exist. The defect and the gate never meet, and the pass is
+indistinguishable from a real one.
+
+**Caught:** three times in one afternoon, in one admin UI, during a theme change.
+
+- Every status badge rendered white on white. The tint classes took their text colour from a token
+  that exists for white-on-solid buttons, over a ten percent alpha wash. The axe test for that
+  screen stubs an empty list, so no badge had ever rendered under the gate. Fixing it meant making
+  that case render a row of every status; reverting one class then turns it red on
+  `serious color-contrast`.
+- Adding a count inside each nav link changed every link's accessible name from `Entries` to
+  `Entries 148`. Every mocked suite passed, because a mocked list has no total, so no count renders.
+  Only the unmocked pack that drives a real API saw it.
+- A test asserting "an item with no data source shows no number" passed against a deliberately
+  broken build, because it asserted before the count query had resolved. It was measuring an
+  unpopulated render, which is the same failure wearing a test's clothes.
+
+The rule that falls out: **for every state a screen can be in, at least one gate must load it with
+data in it.** Empty states are worth testing and they are not a substitute. Pair each one with a
+populated case, and keep at least one pass that talks to the real thing, because the mocks are
+written from the same misunderstanding as the code.
+
+The measurement half is separate and cheap. Contrast is arithmetic, so compute every foreground
+against every background it can land on rather than sampling the pairs a screenshot happens to show.
+The same palette shipped a token at 4.25:1 against one of its own three surfaces, and no rendered
+check would have caught it either, because nothing in the suite put that text on that surface.
+
 ### Look at the data, not the dashboard
 
 Query the actual table before believing any number computed from it.
