@@ -259,14 +259,14 @@ be supported at all was a design fork, and design forks belong in issues.
 
 ### A gate must render the state it checks
 
-An accessibility or contract check that only ever loads an empty or fully mocked page has not
+An accessibility or contract check that only ever loads an empty or data-free mocked page has not
 checked anything that needs data to exist. The defect and the gate never meet, and the pass is
 indistinguishable from a real one.
 
 **Caught:** three times in one afternoon, in one admin UI, during a theme change.
 
 - Every status badge rendered white on white. The tint classes took their text colour from a token
-  that exists for white-on-solid buttons, over a ten percent alpha wash. The axe case for that
+  that exists for white-on-solid buttons, over a ten percent alpha wash. The axe test for that
   screen stubs an empty list, so no badge had ever rendered under the gate. Fixing it meant making
   that case render a row of every status; reverting one class then turns it red on
   `serious color-contrast`.
