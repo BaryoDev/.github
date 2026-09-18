@@ -438,6 +438,41 @@ The world moved; the code did not.
 leaving them to be noticed on the next pull request. If a job can fail without anyone pushing, it
 needs a route to a human that does not depend on anyone pushing.
 
+### A green check proves something about where it ran
+
+A check runs somewhere. That somewhere has to be the place the property actually holds, and the
+default is usually not it. Both halves of this were found in one afternoon, on the same repository,
+and neither announced itself.
+
+**Caught:** a 4KB request body cap that nothing enforced in the suite. `[RequestSizeLimit]` does not
+reject anything itself, it sets `IHttpMaxRequestBodySizeFeature`, and Kestrel is what reads it. The
+integration suite runs on `WebApplicationFactory`, which serves over TestServer, and TestServer does
+not implement that feature. So the attribute was inert there and an 8KB body came back `202`. Three
+documents stated the cap. Any test written for it in that suite would have passed while asserting
+nothing. The fix was not a better assertion, it was moving the test to the suite that starts the
+real host in a child process.
+
+**Caught, an hour later:** a mutation check that could not see the mutation. A secret-scanning
+allowlist had been widened, and widening one far enough to disable the rule looks identical to
+widening it correctly, so the rule was tested by putting a real-looking password in the file. The
+scan came back clean and the allowlist looked safe. `gitleaks detect` scans commits. The password
+was in the working tree, uncommitted, and was never examined. `--no-git` is the flag that scans
+files, and with it the rule fired immediately.
+
+The shape both times: the runner was real, the command exited zero, and the thing under test was
+outside the scope the runner was looking at. Worth asking before trusting any green:
+
+- **Does this host implement the thing being asserted?** Test hosts, in-memory servers and fakes
+  routinely omit features the production host enforces. Limits, timeouts, TLS redirection and
+  middleware ordering are the usual casualties.
+- **What is this tool's unit of work?** Commits, staged changes, the filesystem, one package, the
+  whole solution. A scanner pointed at history says nothing about your disk.
+- **Did the check see my change at all?** If deliberately breaking the thing leaves the check green,
+  the check was never reading it, whatever else it was doing.
+
+The third question is the cheap one and it subsumes the others. It is also the one skipped most
+often, because by then the check is already green and the work feels done.
+
 ### Publishing is not releasing
 
 Pushing a package is one step. If the repository does not also record what shipped, the project
