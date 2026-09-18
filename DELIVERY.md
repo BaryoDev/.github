@@ -738,6 +738,25 @@ warning was in the log. Nobody read the log, because the build was green and the
 or nobody will ever know which one they are looking at. Passing the token that lifts the limit is
 the fix for the cause; saying "showing a cached list" on the page is the fix for the class.
 
+### Pin the test universe
+
+The test runner's file glob defines what "the suite" is. Pin it to the project's own directories
+(explicit roots or ignore patterns for anything that is not the project: vendored checkouts,
+worktrees, tool scratch space), and treat an unexplained jump in the collected-test count as a
+finding, not a bonus.
+
+**Caught:** in rnxORM, Jest's default `**/test/**` glob silently collected an abandoned git
+worktree under `.claude/worktrees/` — a dead branch with its own diverged copy of the source. The
+run reported 605 tests where the project had 286, with 6 failures coming from code that was not
+shipping and green passes from suites that proved nothing about `main`. It had been that way across
+multiple sessions; a human comparing the count against the documented suite size caught it, nothing
+in the pipeline did. The same glob had been fixed once before on a branch that was later abandoned,
+so the fix was lost too — the gate is the config line in the repository, not the memory of having
+fixed it.
+
+A number on the test summary that nobody can reconcile with the suite inventory is the same smell
+as a metric with no denominator.
+
 ---
 
 ## Say what you actually measured
