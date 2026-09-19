@@ -787,6 +787,27 @@ fixed it.
 A number on the test summary that nobody can reconcile with the suite inventory is the same smell
 as a metric with no denominator.
 
+### Assert the new build against an old database, not a fresh one
+
+A schema check whose database was created by the build under test cannot find drift. There is none
+to find: the build made the database in its own image seconds earlier. The only place a missing
+migration is visible is a database that already existed.
+
+**Caught:** a Marten upgrade in barakoCMS needed fourteen `ALTER TABLE` statements on the event
+store. The branch shipped a migration file covering the new dependency's own tables and said the
+schema story was handled. A test asserted that the schema assert command does not throw, and it
+passed, because the integration fixture builds its database from the current build. The CI job that
+starts from an older release went red on the same commit. The app runs `AutoCreate.CreateOnly`,
+which creates a missing table and never alters an existing one, so the real consequence was a host
+that throws on start and crash-loops with the previous container already gone.
+
+Third time that shape reached a branch in the same project: once on a new index, once on a column
+added to an existing document table, once here.
+
+**A green schema assert says the database matches the build. It says nothing about whether anyone
+can get there from the build they are running.** Those are different questions, and only the second
+one is a deploy.
+
 ---
 
 ## Say what you actually measured
