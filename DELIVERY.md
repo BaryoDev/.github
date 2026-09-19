@@ -787,6 +787,36 @@ fixed it.
 A number on the test summary that nobody can reconcile with the suite inventory is the same smell
 as a metric with no denominator.
 
+### A checklist item is a question, not an answer
+
+A review checklist asks a reviewer to confirm something ran. Nothing makes it have run. If the item
+can be satisfied by writing yes, eventually it will be, and the record will say the check passed.
+
+**Caught:** a checklist item reading "mutation reverted and the named tests failed", answered yes on
+pull requests where nothing was reverted. The method had required the check since 5 September:
+the PR body names the production hunk each new test depends on, a script reverts it, and the named
+tests must fail. The script did not exist. `scripts/preflight.sh` was 263 lines with no revert step
+and no hunk parsing, and not one of the last forty merged pull request bodies carried a binding. For
+two weeks the gate written to catch gates that cannot fail was one, and its output was a critic
+asserting it had run.
+
+Found by reading the script against the document that described it, which is a person, not a
+mechanism. That is the tell: when the answer to "who caught this" is a name, the mechanism is
+missing.
+
+Two rules follow. **A checklist item must name the artefact that proves it**, not the fact it
+asserts: "holdout ran and its output line is on the PR" cannot be satisfied by an opinion, where
+"the mutation was reverted" can. And **a check whose failure path never executes is not yet a
+check**: the replacement ships with a fixture suite running a known one-hunk change past all eight
+cases, every failure path included, and preflight fails if any of them stops producing its exit
+code.
+
+The subtler half is what makes the replacement honest about itself. Holding out a hunk usually
+breaks the build in a typed language, and a tree that does not compile runs no tests. Treat that as
+a pass and the gate is green forever on a check that never ran; so it exits inconclusive, which
+fails. An unclaimed hunk fails too, which turns an untested change from a silent gap into a written
+claim sitting next to the diff.
+
 ---
 
 ## Say what you actually measured
