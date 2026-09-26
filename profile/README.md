@@ -91,7 +91,7 @@ per project.
 
 | Project | What it is |
 | --- | --- |
-| [**lean-agent-method**](https://github.com/arnelirobles/lean-agent-method) | How I run AI coding agents over a backlog without burning a plan in a night, with an adversarial review skill |
+| [**lean-agent**](https://github.com/arnelirobles/lean-agent) | How I run AI coding agents over a backlog without burning a plan in a night, with an adversarial review skill |
 | [**template-project**](https://github.com/BaryoDev/template-project) | Universal project template wired to the BaryoDev skills library for AI-assisted development |
 | [**create-baryo-app**](https://github.com/BaryoDev/create-baryo-app) | Scaffold a new project the Baryo way |
 | [**Baryo.CLI**](https://github.com/BaryoDev/Baryo.CLI) | Local AI chat CLI over Docker Model Runner. Models run entirely on your machine: no API keys, no cloud |

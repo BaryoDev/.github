@@ -671,7 +671,7 @@ A change swapping the icons on fourteen published packages came through clean. E
 carried about five and a half kilobytes of signed provenance manifest, and the build packed those
 images into every package. It was one merge from being published under a person's name on a public
 registry. That incident is written up as section 9 of
-[the lean agent method](https://github.com/arnelirobles/lean-agent-method), which is where the
+[lean agent](https://github.com/arnelirobles/lean-agent), which is where the
 scanner below comes from.
 
 Then again here, four days later, in barakoBrew. Nine regenerated design screenshots, 5,758 bytes of
