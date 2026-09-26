@@ -10,18 +10,23 @@ end, publishing the parts that don't ship under NDA.
 
 ## The barako café
 
-The flagship. Four products that ship a client's system from the same images,
-configured rather than rewritten.
+The flagship: four products for building a client's system. You own it and run
+it where you choose. Nothing is metered per seat, record or environment.
+
+The goal is configured, not coded: every site runs the same published images and
+differs only in configuration. Status, September 2026: barakocms.com runs a
+derived press image with a plugin and a small overlay, tracked by
+barakoPress [#166](https://github.com/BaryoDev/barakoPress/issues/166) to [#170](https://github.com/BaryoDev/barakoPress/issues/170).
 
 > **Model it in barakoCMS. Edit it in barakoBrew. Render it with barakoPress. Deploy it anywhere.**
 
-| Product | What it is |
-| --- | --- |
-| [**barakoCMS**](https://github.com/BaryoDev/barakoCMS) | The API. .NET 10 on Marten and PostgreSQL: runtime content types, workflows, roles and field sensitivity, multi-tenancy with custom domains, and opt-in modules as NuGet packages |
-| [**barakoBrew**](https://github.com/BaryoDev/barakoBrew) | The console. Where content types, pages, roles, workflows and each site's look are set up, against the API |
-| [**barakoPress**](https://github.com/BaryoDev/barakoPress) | The renderer. One Next.js app serving many sites from the same image, each with its own domain, identity and theme |
-| [**BaryoVM**](https://github.com/BaryoDev/BaryoVM) | The deploy tool. Agentless deploys over SSH to VMs you own, from one Go CLI |
-| [**barako-client**](https://github.com/BaryoDev/barako-client) | A typed, tenant-aware TypeScript client for the API |
+| Product | What it is | Latest |
+| --- | --- | --- |
+| [**barakoCMS**](https://github.com/BaryoDev/barakoCMS) | The API. .NET 10 on Marten and PostgreSQL: runtime content types, workflows, roles and field sensitivity, multi-tenancy with custom domains, and opt-in modules as NuGet packages | 4.4.1 |
+| [**barakoBrew**](https://github.com/BaryoDev/barakoBrew) | The console. Where content types, pages, roles, workflows and each site's look are set up, against the API | 1.5.0 |
+| [**barakoPress**](https://github.com/BaryoDev/barakoPress) | The renderer for barakoCMS sites: pages from blocks, collections and docs trees, cached until the CMS says otherwise | 0.8.0 |
+| [**BaryoVM**](https://github.com/BaryoDev/BaryoVM) | The deploy tool. Agentless deploys over SSH to VMs you own, from one Go CLI | 0.4.0 |
+| [**barako-client**](https://github.com/BaryoDev/barako-client) | A typed, tenant-aware TypeScript client for the API | 0.3.0 |
 
 [barakocms.com](https://barakocms.com) · [docs](https://barakocms.com/docs/) · [roadmap](https://barakocms.com/roadmap/) · [live console](https://playground.baryo.dev/barakocms)
 
@@ -58,7 +63,7 @@ per project.
 
 | Package | What it does | Latest |
 | --- | --- | --- |
-| [**Verdict**](https://github.com/BaryoDev/Verdict) | Zero-allocation `Result<T>` for error handling without exceptions. Benchmarked far faster than the common alternatives. Eight opt-in packages: `.Extensions`, `.Async`, `.Fluent`, `.Json`, `.Rich`, `.Logging`, `.AspNetCore` | [![NuGet](https://img.shields.io/nuget/v/Verdict?label=)](https://www.nuget.org/packages/Verdict) |
+| [**Verdict**](https://github.com/BaryoDev/Verdict) | Zero-allocation `Result<T>` for error handling without exceptions. Eight opt-in packages: `.Extensions`, `.Async`, `.Fluent`, `.Json`, `.Rich`, `.Logging`, `.AspNetCore` | [![NuGet](https://img.shields.io/nuget/v/Verdict?label=)](https://www.nuget.org/packages/Verdict) |
 | [**Carom**](https://github.com/BaryoDev/Carom) | Resilience: retry, timeout, circuit breaker, fallback, bulkhead, rate limiting. 13 KB zero-dependency core, decorrelated jitter mandatory by default | [![NuGet](https://img.shields.io/nuget/v/Carom?label=)](https://www.nuget.org/packages/Carom) |
 | [**Mapsicle**](https://github.com/BaryoDev/Mapsicle) | Object mapping. Twelve packages with an explicit dependency graph; EF Core, Dapper, validation, caching and audit are all opt-in | [![NuGet](https://img.shields.io/nuget/v/Mapsicle?label=)](https://www.nuget.org/packages/Mapsicle) |
 | [**Talaan**](https://github.com/BaryoDev/Talaan) | Spreadsheet and CSV reader for .NET. `.xlsx` and CSV with no external dependencies | [![NuGet](https://img.shields.io/nuget/v/Talaan?label=)](https://www.nuget.org/packages/Talaan) |
@@ -115,7 +120,10 @@ maintained to package standards.
 
 Most of these were built because something else here needed them.
 
-- **barakocms.com** runs on barakoCMS and barakoPress, and is deployed with BaryoVM.
+- **barakocms.com** runs on barakoCMS, barakoBrew and barakoPress. It is deployed by
+  its site repository's `scripts/cutover.sh`, and its docs, changelog and
+  contributors are pushed hourly by `scripts/push-content.sh`.
+- **press.baryo.dev** is released with BaryoVM.
 - **barako-client** is how a TypeScript app talks to barakoCMS.
 - **DopamineJS** powers dopa-dopa, and **rnxjs** is shown in rnxJS_samples.
 
@@ -148,7 +156,7 @@ about the work.
 | [**@bharathh866**](https://github.com/bharathh866) | Read the Umbraco Marketplace listing properly and said what was wrong with it, including cards that were cutting off. Feedback nobody is obliged to give |
 | [**@jlongyam**](https://github.com/jlongyam) | Fixed a typo in an rnxjs sample binding. Small, and it was wrong for a long time before somebody bothered |
 | [**@KingEmma7**](https://github.com/KingEmma7) | Corrected the BarakoCMS Files module documentation, which had drifted from what the module actually does |
-| [**@MrBeldum**](https://github.com/MrBeldum) | `vm exec` for BaryoVM: run a one-off command on a registered VM without opening a shell yourself |
+| [**@MrBeldum**](https://github.com/MrBeldum) | `vm exec` for BaryoVM: run a one-off command on a registered VM without opening a shell yourself. Shipped in `BaryoVM 0.4.0` |
 
 From Japan, Egypt, Iran and a few places not stated. Thank you, genuinely.
 
