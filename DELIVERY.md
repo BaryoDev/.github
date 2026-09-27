@@ -218,6 +218,15 @@ the thing being published.
 prefix byte for byte while ASP.NET routing does not, so `/Umbraco/login` sailed past a block on
 `/umbraco/`. No test host has a proxy in front of it.
 
+**Caught again, on barakoPress 0.9.0:** a Umami tracking script, drawn by the engine's page head
+behind a settings field and an operator allow list. Unit tests covered every refusal, CI was green,
+and a local run on the engine's own fixture served the tag. 0.9.0 was published on that. Built into
+barakocms.com's image and started on a spare port, every page answered 200 with no tag: that site's
+theme draws its own root layout, which is a documented extension point, so the engine's head never
+renders there. 0.10.0 exported a component the theme puts in its own head, and the same candidate
+run showed the tag on every route before the swap. The engine's fixture is not a consumer. When a
+feature lives in something consumers can replace, observe it in a consumer's build.
+
 Compare **identity, not version strings**. A version can be right while the deployed code is stale,
 and today's `0.1.0` and yesterday's `0.1.0` are the same string and different builds. And compare
 the **server** half, not only anything the client downloads: a server-only change leaves client
