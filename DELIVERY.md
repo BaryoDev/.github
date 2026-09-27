@@ -817,6 +817,24 @@ a pass and the gate is green forever on a check that never ran; so it exits inco
 fails. An unclaimed hunk fails too, which turns an untested change from a silent gap into a written
 claim sitting next to the diff.
 
+### A suite that has never run is not a suite
+
+A test runner in the repository says the tests exist. It says nothing about whether they have ever
+run together, on any machine, from start to finish.
+
+**Caught:** lean-agent shipped `tests/run-all.sh`, which runs 26 self-tests. It had never finished
+anywhere. It used `mapfile` and `timeout`, and macOS ships neither (bash 3.2, no coreutils),
+so on a Mac it died before the first test. There was no CI, so it never ran on Linux either. The
+runner being in the repo felt like the suite being green. The first CI run failed on the `heavy.sh` self-test. That failure was a race: the test read
+the lock holder's command before the holder had started, so it failed about one run in five, which
+is why running it by hand never showed it. The fix was to poll until the holder appeared. It then
+passed 30 times in a row.
+
+Two rules follow. **A test runner gets a CI job in the same PR that adds it**, so "it runs" is a
+check, not a belief. And **a test that cannot run on a platform says so**: `heavy.sh` needs `flock`
+and `/proc`, so on macOS its self-test now exits 77 and the runner prints `skip`, rather than
+failing in a way that teaches everyone to ignore the runner.
+
 ---
 
 ## Say what you actually measured
