@@ -65,7 +65,7 @@ per project.
 | --- | --- | --- |
 | [**Verdict**](https://github.com/BaryoDev/Verdict) | Zero-allocation `Result<T>` for error handling without exceptions. Eight opt-in packages: `.Extensions`, `.Async`, `.Fluent`, `.Json`, `.Rich`, `.Logging`, `.AspNetCore` | [![NuGet](https://img.shields.io/nuget/v/Verdict?label=)](https://www.nuget.org/packages/Verdict) |
 | [**Carom**](https://github.com/BaryoDev/Carom) | Resilience: retry, timeout, circuit breaker, fallback, bulkhead, rate limiting. 13 KB zero-dependency core, decorrelated jitter mandatory by default | [![NuGet](https://img.shields.io/nuget/v/Carom?label=)](https://www.nuget.org/packages/Carom) |
-| [**Mapsicle**](https://github.com/BaryoDev/Mapsicle) | Object mapping. Twelve packages with an explicit dependency graph; EF Core, Dapper, validation, caching and audit are all opt-in | [![NuGet](https://img.shields.io/nuget/v/Mapsicle?label=)](https://www.nuget.org/packages/Mapsicle) |
+| [**Mapsicle**](https://github.com/BaryoDev/Mapsicle) | Object mapping. Fourteen packages with an explicit dependency graph; EF Core, Dapper, validation, caching and audit are all opt-in | [![NuGet](https://img.shields.io/nuget/v/Mapsicle?label=)](https://www.nuget.org/packages/Mapsicle) |
 | [**Talaan**](https://github.com/BaryoDev/Talaan) | Spreadsheet and CSV reader for .NET. `.xlsx` and CSV with no external dependencies | [![NuGet](https://img.shields.io/nuget/v/Talaan?label=)](https://www.nuget.org/packages/Talaan) |
 
 ## JavaScript and TypeScript packages
