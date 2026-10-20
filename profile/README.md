@@ -14,18 +14,19 @@ The flagship: four products for building a client's system. You own it and run
 it where you choose. Nothing is metered per seat, record or environment.
 
 The goal is configured, not coded: every site runs the same published images and
-differs only in configuration. Status, September 2026: barakocms.com runs a
-derived press image with a plugin and a small overlay, tracked by
-barakoPress [#166](https://github.com/BaryoDev/barakoPress/issues/166) to [#170](https://github.com/BaryoDev/barakoPress/issues/170).
+differs only in configuration. Status, October 2026: barakocms.com still runs a
+derived press image with one plugin and one overlay. The gaps tracked in
+barakoPress [#166](https://github.com/BaryoDev/barakoPress/issues/166) to [#170](https://github.com/BaryoDev/barakoPress/issues/170) are closed, and the overlay stays
+because a plugin adds blocks, not layouts, routes or CSS.
 
 > **Model it in barakoCMS. Edit it in barakoBrew. Render it with barakoPress. Deploy it anywhere.**
 
 | Product | What it is | Latest |
 | --- | --- | --- |
-| [**barakoCMS**](https://github.com/BaryoDev/barakoCMS) | The API. .NET 10 on Marten and PostgreSQL: runtime content types, workflows, roles and field sensitivity, multi-tenancy with custom domains, and opt-in modules as NuGet packages | 4.4.1 |
-| [**barakoBrew**](https://github.com/BaryoDev/barakoBrew) | The console. Where content types, pages, roles, workflows and each site's look are set up, against the API | 1.6.0 |
-| [**barakoPress**](https://github.com/BaryoDev/barakoPress) | The renderer for barakoCMS sites: pages from blocks, collections and docs trees, cached until the CMS says otherwise | 0.8.0 |
-| [**BaryoVM**](https://github.com/BaryoDev/BaryoVM) | The deploy tool. Agentless deploys over SSH to VMs you own, from one Go CLI | 0.4.0 |
+| [**barakoCMS**](https://github.com/BaryoDev/barakoCMS) | The API. .NET 10 on Marten and PostgreSQL: runtime content types, workflows, roles and field sensitivity, multi-tenancy with custom domains, and opt-in modules as NuGet packages | 5.1.0 |
+| [**barakoBrew**](https://github.com/BaryoDev/barakoBrew) | The console. Where content types, pages, roles, workflows and each site's look are set up, against the API | 1.10.0 |
+| [**barakoPress**](https://github.com/BaryoDev/barakoPress) | The renderer for barakoCMS sites: pages from blocks, collections and docs trees, cached until the CMS says otherwise | 0.15.0 |
+| [**BaryoVM**](https://github.com/BaryoDev/BaryoVM) | The deploy tool. Agentless deploys over SSH to VMs you own, from one Go CLI | 0.5.0 |
 | [**barako-client**](https://github.com/BaryoDev/barako-client) | A typed, tenant-aware TypeScript client for the API | 0.3.1 |
 
 [barakocms.com](https://barakocms.com) · [docs](https://barakocms.com/docs/) · [roadmap](https://barakocms.com/roadmap/) · [live console](https://playground.baryo.dev/barakocms)
@@ -37,7 +38,7 @@ barakoPress [#166](https://github.com/BaryoDev/barakoPress/issues/166) to [#170]
 | If you are... | Go to |
 | --- | --- |
 | Building a **client site or business system on .NET** | [The barako café](#the-barako-café) |
-| A **.NET developer** who wants one small, fast library | [Verdict](https://github.com/BaryoDev/Verdict) · [Carom](https://github.com/BaryoDev/Carom) · [Mapsicle](https://github.com/BaryoDev/Mapsicle) · [Talaan](https://github.com/BaryoDev/Talaan) |
+| A **.NET developer** who wants one small, fast library | [Verdict](https://github.com/BaryoDev/Verdict) · [Carom](https://github.com/BaryoDev/Carom) · [Mapsicle](https://github.com/BaryoDev/Mapsicle) · [Talaan](https://github.com/BaryoDev/Talaan) · [Vouch](https://github.com/BaryoDev/Vouch) |
 | A **JS/TS developer** | [rnxjs](https://github.com/BaryoDev/rnxjs) · [rnxORM](https://github.com/BaryoDev/rnxORM) · [DopamineJS](https://github.com/BaryoDev/dopaminejs) · [pwa-kit](https://github.com/BaryoDev/pwa-kit) |
 | Running an **Umbraco site** | [Umbraco PWA](https://github.com/BaryoDev/umbraco-pwa) · [Umbraco Read Aloud](https://github.com/BaryoDev/umbraco-read-aloud) |
 | **Evaluating the engineering** | [Verdict](https://github.com/BaryoDev/Verdict) for the design thesis, [barakoCMS](https://github.com/BaryoDev/barakoCMS) for the largest system |
@@ -67,13 +68,14 @@ per project.
 | [**Carom**](https://github.com/BaryoDev/Carom) | Resilience: retry, timeout, circuit breaker, fallback, bulkhead, rate limiting. 13 KB zero-dependency core, decorrelated jitter mandatory by default | [![NuGet](https://img.shields.io/nuget/v/Carom?label=)](https://www.nuget.org/packages/Carom) |
 | [**Mapsicle**](https://github.com/BaryoDev/Mapsicle) | Object mapping. Fourteen packages with an explicit dependency graph; EF Core, Dapper, validation, caching and audit are all opt-in | [![NuGet](https://img.shields.io/nuget/v/Mapsicle?label=)](https://www.nuget.org/packages/Mapsicle) |
 | [**Talaan**](https://github.com/BaryoDev/Talaan) | Spreadsheet and CSV reader for .NET. `.xlsx` and CSV with no external dependencies | [![NuGet](https://img.shields.io/nuget/v/Talaan?label=)](https://www.nuget.org/packages/Talaan) |
+| [**Vouch**](https://github.com/BaryoDev/Vouch) | Fluent assertions with no dependencies. The `.Should()` surface of FluentAssertions under MPL-2.0, working under xUnit, NUnit and MSTest | [![NuGet](https://img.shields.io/nuget/v/Vouch?label=)](https://www.nuget.org/packages/Vouch) |
 
 ## JavaScript and TypeScript packages
 
 | Package | What it does | Latest |
 | --- | --- | --- |
 | [**DopamineJS**](https://github.com/BaryoDev/dopaminejs) | Game-feel engine for the web: XP, achievements, streaks, particles, synthesized sound. Ships TypeScript declarations | [![npm](https://img.shields.io/npm/v/dopaminejs?label=)](https://www.npmjs.com/package/dopaminejs) |
-| [**rnxjs**](https://github.com/BaryoDev/rnxjs) | Reactive UI framework in TypeScript. 646 passing tests across Vitest and Playwright | [![npm](https://img.shields.io/npm/v/@arnelirobles/rnxjs?label=)](https://www.npmjs.com/package/@arnelirobles/rnxjs) |
+| [**rnxjs**](https://github.com/BaryoDev/rnxjs) | Reactive UI framework in TypeScript. 46 components, 696 tests | [![npm](https://img.shields.io/npm/v/@arnelirobles/rnxjs?label=)](https://www.npmjs.com/package/@arnelirobles/rnxjs) |
 | [**rnxORM**](https://github.com/BaryoDev/rnxORM) | TypeScript ORM for Node.js. PostgreSQL, SQL Server and MariaDB, with integration tests | [![npm](https://img.shields.io/npm/v/rnxorm?label=)](https://www.npmjs.com/package/rnxorm) |
 | [**pwa-kit**](https://github.com/BaryoDev/pwa-kit) | Drop-in PWA kit: install prompt for Android and iOS, network-first service worker | [![npm](https://img.shields.io/npm/v/@baryodev/pwa-kit?label=)](https://www.npmjs.com/package/@baryodev/pwa-kit) |
 | [**read-aloud**](https://github.com/BaryoDev/read-aloud) | Read-aloud for any site using Edge neural TTS. Headless controller plus a web component | [![npm](https://img.shields.io/npm/v/@baryodev/read-aloud?label=)](https://www.npmjs.com/package/@baryodev/read-aloud) |
@@ -94,7 +96,7 @@ per project.
 | [**lean-agent**](https://github.com/arnelirobles/lean-agent) | How I run AI coding agents over a backlog without burning a plan in a night, with an adversarial review skill |
 | [**template-project**](https://github.com/BaryoDev/template-project) | Universal project template wired to the BaryoDev skills library for AI-assisted development |
 | [**create-baryo-app**](https://github.com/BaryoDev/create-baryo-app) | Scaffold a new project the Baryo way |
-| [**Baryo.CLI**](https://github.com/BaryoDev/Baryo.CLI) | Local AI chat CLI over Docker Model Runner. Models run entirely on your machine: no API keys, no cloud |
+| [**Baryo.CLI**](https://github.com/BaryoDev/Baryo.CLI) | AI chat CLI for local models on Ollama or Docker Model Runner, or 18+ cloud providers. Tool calling, an MCP client, and permission modes that ask before a destructive tool runs |
 
 ## Design assets
 
@@ -131,7 +133,7 @@ Most of these were built because something else here needed them.
 
 The same conventions across every repo, which is the point:
 
-- **Tests in CI on every push.** Verdict has 551, rnxjs 646, DopamineJS 95
+- **Tests in CI on every push.** barakoCMS has about 4,900 test methods, Verdict about 680, rnxjs 696, DopamineJS about 310
 - **Published, not just pushed.** If it has a README claiming it works, it is on NuGet or npm
 - **Zero or few dependencies.** Especially in cores
 - **Benchmarks over adjectives.** Performance claims come with numbers you can re-run
