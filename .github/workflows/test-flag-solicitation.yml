@@ -1,0 +1,17 @@
+name: Test flag-solicitation pattern
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/flag-solicitation.yml
+      - tests/flag-solicitation.sh
+
+permissions:
+  contents: read
+
+jobs:
+  pattern:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: tests/flag-solicitation.sh

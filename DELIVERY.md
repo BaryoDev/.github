@@ -218,6 +218,15 @@ the thing being published.
 prefix byte for byte while ASP.NET routing does not, so `/Umbraco/login` sailed past a block on
 `/umbraco/`. No test host has a proxy in front of it.
 
+**Caught again, on barakoPress 0.9.0:** a Umami tracking script, drawn by the engine's page head
+behind a settings field and an operator allow list. Unit tests covered every refusal, CI was green,
+and a local run on the engine's own fixture served the tag. 0.9.0 was published on that. Built into
+barakocms.com's image and started on a spare port, every page answered 200 with no tag: that site's
+theme draws its own root layout, which is a documented extension point, so the engine's head never
+renders there. 0.10.0 exported a component the theme puts in its own head, and the same candidate
+run showed the tag on every route before the swap. The engine's fixture is not a consumer. When a
+feature lives in something consumers can replace, observe it in a consumer's build.
+
 Compare **identity, not version strings**. A version can be right while the deployed code is stale,
 and today's `0.1.0` and yesterday's `0.1.0` are the same string and different builds. And compare
 the **server** half, not only anything the client downloads: a server-only change leaves client
@@ -671,7 +680,7 @@ A change swapping the icons on fourteen published packages came through clean. E
 carried about five and a half kilobytes of signed provenance manifest, and the build packed those
 images into every package. It was one merge from being published under a person's name on a public
 registry. That incident is written up as section 9 of
-[the lean agent method](https://github.com/arnelirobles/lean-agent-method), which is where the
+[lean agent](https://github.com/arnelirobles/lean-agent), which is where the
 scanner below comes from.
 
 Then again here, four days later, in barakoBrew. Nine regenerated design screenshots, 5,758 bytes of
@@ -807,6 +816,54 @@ added to an existing document table, once here.
 **A green schema assert says the database matches the build. It says nothing about whether anyone
 can get there from the build they are running.** Those are different questions, and only the second
 one is a deploy.
+
+### A checklist item is a question, not an answer
+
+A review checklist asks a reviewer to confirm something ran. Nothing makes it have run. If the item
+can be satisfied by writing yes, eventually it will be, and the record will say the check passed.
+
+**Caught:** a checklist item reading "mutation reverted and the named tests failed", answered yes on
+pull requests where nothing was reverted. The method had required the check since 5 September:
+the PR body names the production hunk each new test depends on, a script reverts it, and the named
+tests must fail. The script did not exist. `scripts/preflight.sh` was 263 lines with no revert step
+and no hunk parsing, and not one of the last forty merged pull request bodies carried a binding. For
+two weeks the gate written to catch gates that cannot fail was one, and its output was a critic
+asserting it had run.
+
+Found by reading the script against the document that described it, which is a person, not a
+mechanism. That is the tell: when the answer to "who caught this" is a name, the mechanism is
+missing.
+
+Two rules follow. **A checklist item must name the artefact that proves it**, not the fact it
+asserts: "holdout ran and its output line is on the PR" cannot be satisfied by an opinion, where
+"the mutation was reverted" can. And **a check whose failure path never executes is not yet a
+check**: the replacement ships with a fixture suite running a known one-hunk change past all eight
+cases, every failure path included, and preflight fails if any of them stops producing its exit
+code.
+
+The subtler half is what makes the replacement honest about itself. Holding out a hunk usually
+breaks the build in a typed language, and a tree that does not compile runs no tests. Treat that as
+a pass and the gate is green forever on a check that never ran; so it exits inconclusive, which
+fails. An unclaimed hunk fails too, which turns an untested change from a silent gap into a written
+claim sitting next to the diff.
+
+### A suite that has never run is not a suite
+
+A test runner in the repository says the tests exist. It says nothing about whether they have ever
+run together, on any machine, from start to finish.
+
+**Caught:** lean-agent shipped `tests/run-all.sh`, which runs 26 self-tests. It had never finished
+anywhere. It used `mapfile` and `timeout`, and macOS ships neither (bash 3.2, no coreutils),
+so on a Mac it died before the first test. There was no CI, so it never ran on Linux either. The
+runner being in the repo felt like the suite being green. The first CI run failed on the `heavy.sh` self-test. That failure was a race: the test read
+the lock holder's command before the holder had started, so it failed about one run in five, which
+is why running it by hand never showed it. The fix was to poll until the holder appeared. It then
+passed 30 times in a row.
+
+Two rules follow. **A test runner gets a CI job in the same PR that adds it**, so "it runs" is a
+check, not a belief. And **a test that cannot run on a platform says so**: `heavy.sh` needs `flock`
+and `/proc`, so on macOS its self-test now exits 77 and the runner prints `skip`, rather than
+failing in a way that teaches everyone to ignore the runner.
 
 ---
 
