@@ -16,6 +16,6 @@ check() { # expected input
   printf '%-6s expect %-5s got %-5s %s\n' "$r" "$1" "$got" "$2"
 }
 
-for t in "errors 2" "hours 5" "users 3" "parsers 2" "Others 4" "winr 3"; do check miss "$t"; done
-for t in '$50' "USD 100" "Rs. 500" "rs 200" "₱1000" "£20" "eur 30" "INR 40" "I can do it, usd50" "rs.500" "my rate is fine"; do check hit "$t"; done
+for t in "errors 2" "hours 5" "users 3" "parsers 2" "Others 4" "winr 3" "xrs 5"; do check miss "$t"; done
+for t in '$50' "USD 100" "Rs. 500" "rs 200" "₱1000" "£20" "eur 30" "INR 40" "I can do it, usd50" "rs.500" "my rate is fine" "(USD 20)" "price:usd 5" "100usd" 'USD$5'; do check hit "$t"; done
 exit $fail
