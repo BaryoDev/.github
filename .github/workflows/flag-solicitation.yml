@@ -36,7 +36,11 @@ jobs:
           fi
 
       - name: Label and notify
-        if: steps.scan.outputs.hit == 'true' && github.event.comment.user.login != github.repository_owner
+        # repository_owner is the org name on org repos, so also skip people with a role on the repo.
+        if: >-
+          steps.scan.outputs.hit == 'true' &&
+          github.event.comment.user.login != github.repository_owner &&
+          !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
