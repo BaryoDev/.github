@@ -35,6 +35,10 @@ on:
 jobs:
   announce:
     runs-on: ubuntu-latest
+    # Neither step uses GITHUB_TOKEN. The discussion post authenticates with ANNOUNCE_TOKEN (GH_TOKEN
+    # below) and the Discord post uses the webhook URL. No checkout, so no contents scope either.
+    permissions: {}
+    timeout-minutes: 10
     steps:
       - name: Post to org announcements
         # Best-effort: announcing is a courtesy, never a release gate. If the discussion post fails
@@ -55,11 +59,12 @@ jobs:
 
           # Idempotency: skip if a discussion with this exact title already exists. We list the
           # repo's recent discussions rather than the global search API, which a fine-grained token
-          # scoped only to Discussions can't access.
+          # scoped only to Discussions can't access. A failed read must fail the step (set -e), so it
+          # never looks like "not announced yet" and posts a second time. An empty list is fine.
           TITLES=$(gh api graphql \
             -f query='query{repository(owner:"BaryoDev",name:".github"){discussions(first:100, orderBy:{field:CREATED_AT, direction:DESC}){nodes{title}}}}' \
-            --jq '.data.repository.discussions.nodes[].title' || true)
-          if printf '%s\n' "$TITLES" | grep -Fxq "$TITLE"; then
+            --jq '.data.repository.discussions.nodes[].title')
+          if grep -Fxq "$TITLE" <<<"$TITLES"; then
             echo "Already announced: $TITLE"
             exit 0
           fi
@@ -110,7 +115,7 @@ jobs:
               embeds: [{title: $t, description: $d, color: 35514}]}')
 
           # Discord returns 204 on success. Fail soft (continue-on-error covers a hard failure too).
-          code=$(curl -s -o /dev/null -w "%{http_code}" \
+          code=$(curl -s --max-time 30 -o /dev/null -w "%{http_code}" \
             -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK")
           echo "Discord responded $code"
           [ "$code" = "204" ] || echo "Non-204 from Discord (non-fatal)."
